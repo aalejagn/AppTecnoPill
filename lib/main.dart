@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_aplicacion1/screens/imc_bluetooth_screen.dart';
 // import 'package:flutter_aplicacion1/core/app_colores.dart';
+import 'package:flutter_aplicacion1/screens/splash_screen.dart';
 
 void main() {
   runApp(const TecnoPillApp());
@@ -26,7 +27,8 @@ class TecnoPillApp extends StatelessWidget {
       ),
     
     //Plantilla de bluetooth
-    home: BluetoothScreen(),
+    home: SplashScreen(),
+    // home: BluetoothScreen(),
     );
   }
 }
