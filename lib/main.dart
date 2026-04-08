@@ -6,6 +6,9 @@ import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/add_patient_screen.dart';
 import 'screens/add_schedule_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/wifi_screen.dart';
+import 'screens/bluetooth_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,7 +23,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF7B61FF)),
         useMaterial3: true,
       ),
-      home: MainScreen(),
+      home: SplashScreen(),
     );
   }
 }
@@ -104,14 +107,69 @@ class _MainScreenState extends State<MainScreen>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final fabCenterX = screenWidth / 2;
-    final fabCenterY = screenHeight - 80 + 4;
+    // Posicion de botones
+    final fabCenterY = MediaQuery.of(context).size.height 
+        - kBottomNavigationBarHeight 
+        - 80;
 
     const double radius = 95; // <-- reducido de 130 a 95
     const double btnSize = 64;
 
     return Scaffold(
+      extendBody: true,
+      appBar: AppBar(
+        title: Text("Mi App"),
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
+
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF7B61FF),
+              ),
+              child: Text(
+                "Menú",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ),
+
+            ListTile(
+              leading: Icon(Icons.wifi),
+              title: Text("WiFi"),
+              onTap: () {
+                Navigator.pop(context);
+
+                if (_isOpen) toggleMenu();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => WifiScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.bluetooth),
+              title: Text("Bluetooth"),
+              onTap: () {
+                Navigator.pop(context);
+
+                if (_isOpen) toggleMenu();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => BluetoothScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      
       body: Stack(
         children: [
           // 1) Pantalla activa
