@@ -1,280 +1,148 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_aplicacion1/services/bluetooth_servicio.dart';
 
-class BluetoothScreen extends StatelessWidget {
+class BluetoothScreen extends StatefulWidget {
   const BluetoothScreen({super.key});
 
-  // 🔵 dispositivos simulados
-  final List<Map<String, dynamic>> devices = const [
-    {"name": "AirPods Pro", "type": Icons.headphones},
-    {"name": "Bocina JBL", "type": Icons.speaker},
-    {"name": "Smart Watch", "type": Icons.watch},
-    {"name": "Teclado Bluetooth", "type": Icons.keyboard},
-    {"name": "Mouse Logitech", "type": Icons.mouse},
-  ];
+  @override
+  _BluetoothScreenState createState() => _BluetoothScreenState();
+}
+
+class _BluetoothScreenState extends State<BluetoothScreen> {
+  // Lógica de backend
+  final MiBluetoothService _bluetoothService = MiBluetoothService();
+  List<ScanResult> _listaDispositivos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Escuchamos los resultados reales del escaneo
+    FlutterBluePlus.scanResults.listen((resultados) {
+      final listaLimpia = resultados.where((r) {
+        return r.advertisementData.advName.isNotEmpty;
+      }).toList();
+      
+      setState(() {
+        _listaDispositivos = listaLimpia;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Hacemos el AppBar transparente para que se vean los círculos de fondo
       appBar: AppBar(
-        title: const Text("Bluetooth"),
+        title: const Text("Conectar TecnoPill", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       extendBodyBehindAppBar: true,
-
       body: Stack(
         children: [
-
-          // 🔵 FONDO
-          Container(color: Colors.white),
-
+          // FONDO DECORATIVOJAJAJJA
+          Container(color: const Color(0xFFF8F9FA)),
           Positioned(
             top: -80,
             left: -80,
             child: _circle(const Color(0xFF3F7CAC).withOpacity(0.3), 200),
           ),
-
           Positioned(
             top: -60,
             right: -60,
             child: _circle(const Color(0xFFF2F4F3), 180),
           ),
-
           Positioned(
             bottom: -100,
             right: -50,
             child: _circle(const Color(0xFF3F7CAC).withOpacity(0.2), 220),
           ),
 
-          // 📡 CONTENIDO
+          // CONTENIDO REAL
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-                  // 🔥 TITULO + ESCANEAR
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "Dispositivos disponibles",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        "Dispositivos cercanos",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
-
-                      ElevatedButton(
+                      // Botón de Escanear vinculado al servicio
+                      ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3F7CAC),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () {
+                          _bluetoothService.startScan();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Buscando dispositivos... 🔍"),
-                            ),
+                            const SnackBar(content: Text("Buscando TecnoPill... 🔍"), duration: Duration(seconds: 2)),
                           );
                         },
-                        child: const Text("Escanear"),
+                        icon: const Icon(Icons.search, size: 18),
+                        label: const Text("Escanear"),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
 
-                  // 📋 LISTA
+                  //LISTA DE DISPOSITIVOS REALES
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: devices.length,
-                      itemBuilder: (context, index) {
-                        final device = devices[index];
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              device["type"],
-                              color: const Color(0xFF3F7CAC),
+                    child: _listaDispositivos.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.bluetooth_searching, size: 50, color: Colors.grey[400]),
+                                const SizedBox(height: 10),
+                                Text("No hay dispositivos a la vista", style: TextStyle(color: Colors.grey[600])),
+                              ],
                             ),
-                            title: Text(device["name"]),
-                            trailing: const Icon(Icons.bluetooth),
+                          )
+                        : ListView.builder(
+                            itemCount: _listaDispositivos.length,
+                            itemBuilder: (context, index) {
+                              final scanResult = _listaDispositivos[index];
+                              final nombre = scanResult.advertisementData.advName;
 
-                            onTap: () {
-                              bool isLoading = false;
-
-                              showDialog(
-                                context: context,
-                                barrierDismissible: !isLoading,
-                                builder: (context) {
-                                  return StatefulBuilder(
-                                    builder: (context, setState) {
-                                      return AlertDialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        title: Text(
-                                            "Conectar a ${device["name"]}"),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-
-                                            if (isLoading)
-                                              const Column(
-                                                children: [
-                                                  CircularProgressIndicator(),
-                                                  SizedBox(height: 10),
-                                                  Text("Conectando..."),
-                                                ],
-                                              )
-                                            else
-                                              const Text(
-                                                  "¿Deseas conectar este dispositivo?"),
-                                          ],
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: isLoading
-                                                ? null
-                                                : () =>
-                                                    Navigator.pop(context),
-                                            child: const Text("Cancelar"),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: isLoading
-                                                ? null
-                                                : () async {
-                                                    setState(() {
-                                                      isLoading = true;
-                                                    });
-
-                                                    await Future.delayed(
-                                                        const Duration(
-                                                            seconds: 2));
-
-                                                    Navigator.pop(context);
-
-                                                    // 🔥 MODAL ÉXITO
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return Dialog(
-                                                          shape:
-                                                              RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(25),
-                                                          ),
-                                                          child: Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(25),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: const Color(
-                                                                  0xFF3F7CAC),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          25),
-                                                            ),
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: [
-                                                                const Icon(
-                                                                  Icons
-                                                                      .check_circle,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 80,
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 20),
-                                                                Text(
-                                                                  "Conectado a",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Colors
-                                                                        .white
-                                                                        .withOpacity(
-                                                                            0.9),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 8),
-                                                                Text(
-                                                                  device["name"],
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        22,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 20),
-                                                                ElevatedButton(
-                                                                  style:
-                                                                      ElevatedButton
-                                                                          .styleFrom(
-                                                                    backgroundColor:
-                                                                        Colors
-                                                                            .white,
-                                                                    foregroundColor:
-                                                                        const Color(
-                                                                            0xFF3F7CAC),
-                                                                  ),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(
-                                                                        context);
-                                                                  },
-                                                                  child:
-                                                                      const Text(
-                                                                          "Aceptar"),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                            child: const Text("Conectar"),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ListTile(
+                                  leading: const CircleAvatar(
+                                    backgroundColor: Color(0xFFE3F2FD),
+                                    child: Icon(Icons.bluetooth, color: Color(0xFF3F7CAC)),
+                                  ),
+                                  title: Text(
+                                    nombre,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  subtitle: Text(scanResult.device.remoteId.toString(), style: const TextStyle(fontSize: 12)),
+                                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                                  onTap: () => _mostrarDialogoConexion(context, scanResult),
+                                ),
                               );
                             },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -285,14 +153,44 @@ class BluetoothScreen extends StatelessWidget {
     );
   }
 
+  // Widget auxiliar para los círculos de fondo
   Widget _circle(Color color, double size) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+
+  // Ventana de confirmación 
+  void _mostrarDialogoConexion(BuildContext context, ScanResult resultado) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text("Conectar a ${resultado.advertisementData.advName}"),
+          content: const Text("¿Deseas vincular este dispositivo con TecnoPill?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3F7CAC),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                _bluetoothService.connectarServicio(resultado.device);
+                Navigator.pop(context);
+                // 
+              },
+              child: const Text("Conectar"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

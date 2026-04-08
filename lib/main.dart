@@ -109,9 +109,8 @@ class _MainScreenState extends State<MainScreen>
     final screenWidth = MediaQuery.of(context).size.width;
     final fabCenterX = screenWidth / 2;
     // Posicion de botones
-    final fabCenterY = MediaQuery.of(context).size.height 
-        - kBottomNavigationBarHeight 
-        - 80;
+    final fabCenterY =
+        MediaQuery.of(context).size.height - kBottomNavigationBarHeight - 80;
 
     const double radius = 95; // <-- reducido de 130 a 95
     const double btnSize = 64;
@@ -129,9 +128,7 @@ class _MainScreenState extends State<MainScreen>
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF7B61FF),
-              ),
+              decoration: BoxDecoration(color: Color(0xFF7B61FF)),
               child: Text(
                 "Menú",
                 style: TextStyle(color: Colors.white, fontSize: 20),
@@ -169,7 +166,7 @@ class _MainScreenState extends State<MainScreen>
           ],
         ),
       ),
-      
+
       body: Stack(
         children: [
           // 1) Pantalla activa
