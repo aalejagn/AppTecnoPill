@@ -18,6 +18,9 @@ class MiBluetoothService {
   BluetoothCharacteristic? _caracteristica;
   List<String> redesWifi = [];
 
+  // ip
+  String? ipActualESP32;
+
   void startScan() {
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
     FlutterBluePlus.scanResults.listen((resultados) {
@@ -68,6 +71,14 @@ class MiBluetoothService {
             String rawRespuesta = String.fromCharCodes(value);
             print("[BLE] Recibido: $rawRespuesta");
 
+            // Conseguir la ip
+            if (rawRespuesta.startsWith("IP|")) {
+              ipActualESP32 = rawRespuesta.split('|')[1].trim();
+              print("¡IP capturada con éxito!: $ipActualESP32");
+              return;
+            }
+
+            // ----------------
             // ← esto es todo lo que falta
             if (rawRespuesta == "SCAN" ||
                 rawRespuesta == "WIFI_OK" ||

@@ -38,7 +38,20 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+    #Base de datos
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.2 # para encontrar donde guardar la DB
+
+  # Agregar http
+  http: ^1.6.0
+
+  #
+  intl: ^0.19.0
+
 dev_dependencies:
+  isar_generator: ^3.1.0+1 # Generador de codigo 
+  build_runner: ^2.4.0
   flutter_test:
     sdk: flutter
 

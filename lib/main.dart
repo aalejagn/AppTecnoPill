@@ -11,7 +11,25 @@ import 'screens/wifi_screen.dart';
 import 'screens/bluetooth_screen.dart';
 import 'services/bluetooth_servicio.dart';
 
-void main() {
+//Base de datos
+import 'package:path_provider/path_provider.dart';
+import 'package:isar/isar.dart';
+import 'models/schedule.dart'; // Tu nuevo modelo
+
+//Variable global
+late Isar isar;
+void main() async {
+  // 1. Asegurar que los widgets estén listos
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Obtener el directorio para guardar la base de datos
+  final dir = await getApplicationDocumentsDirectory();
+
+  // 3. Abrir Isar con el esquema de Schedule
+  isar = await Isar.open(
+    [ScheduleSchema], 
+    directory: dir.path,
+  );
   runApp(MyApp());
 }
 
