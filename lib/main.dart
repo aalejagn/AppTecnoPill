@@ -9,6 +9,7 @@ import 'screens/add_schedule_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/wifi_screen.dart';
 import 'screens/bluetooth_screen.dart';
+import 'services/bluetooth_servicio.dart';
 
 void main() {
   runApp(MyApp());
@@ -136,30 +137,49 @@ class _MainScreenState extends State<MainScreen>
             ),
 
             ListTile(
-              leading: Icon(Icons.wifi),
-              title: Text("WiFi"),
+              leading: const Icon(Icons.wifi),
+              title: const Text("WiFi"),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Cierra el Drawer
+                if (_isOpen)
+                  toggleMenu(); // Cierra el menú circular si está abierto
 
-                if (_isOpen) toggleMenu();
+                // IMPORTANTE: Obtenemos el dispositivo desde el Singleton
+                final conectado = MiBluetoothService().dispositivoConectado;
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => WifiScreen()),
-                );
+                if (conectado != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WifiScreen(device: conectado),
+                    ),
+                  );
+                } else {
+                  // Si no hay nada conectado, lo mandamos primero a la pantalla de Bluetooth
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Primero conecta tu TecnoPill por Bluetooth",
+                      ),
+                    ),
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BluetoothScreen()),
+                  );
+                }
               },
             ),
             ListTile(
-              leading: Icon(Icons.bluetooth),
-              title: Text("Bluetooth"),
+              leading: const Icon(Icons.bluetooth),
+              title: const Text("Bluetooth"),
               onTap: () {
                 Navigator.pop(context);
-
                 if (_isOpen) toggleMenu();
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => BluetoothScreen()),
+                  MaterialPageRoute(builder: (_) => const BluetoothScreen()),
                 );
               },
             ),

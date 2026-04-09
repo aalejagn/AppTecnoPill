@@ -1,3 +1,4 @@
+import 'dart:async'; // ← agrega este import
 import 'package:flutter/material.dart';
 import 'package:flutter_aplicacion1/main.dart';
 
@@ -13,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _logoScale;
   late Animation<double> _circleScale;
+  Timer? _timer; // ← agrega esto
 
   @override
   void initState() {
@@ -23,7 +25,6 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 4),
     );
 
-    // 🔥 Logo: pulse rápido + desaparece
     _logoScale =
         TweenSequence<double>([
           TweenSequenceItem(
@@ -52,7 +53,6 @@ class _SplashScreenState extends State<SplashScreen>
           CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5)),
         );
 
-    // 💥 Círculo explota después
     _circleScale = Tween<double>(begin: 0, end: 20).animate(
       CurvedAnimation(
         parent: _controller,
@@ -62,8 +62,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navegación
-    Future.delayed(const Duration(seconds: 4), () {
+    // ← reemplaza el Future.delayed por un Timer cancelable
+    _timer = Timer(const Duration(seconds: 4), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
@@ -79,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _timer?.cancel(); // ← cancela el timer si el widget muere antes
     _controller.dispose();
     super.dispose();
   }
@@ -89,10 +91,8 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         alignment: Alignment.center,
         children: [
-          // Fondo
           Container(color: Colors.white),
 
-          // 🔵 Círculos múltiples (efecto pro)
           ...List.generate(4, (index) {
             final colors = [const Color(0xFF3F7CAC), const Color(0xFF5478A0)];
 
@@ -116,14 +116,13 @@ class _SplashScreenState extends State<SplashScreen>
                 decoration: BoxDecoration(
                   color: colors[index % 2].withOpacity(
                     0.25 + (0.15 * (4 - index)),
-                  ), // 👈 profundidad
+                  ),
                   shape: BoxShape.circle,
                 ),
               ),
             );
           }),
 
-          // 🧠 Logo
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -132,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Transform.scale(scale: _logoScale.value, child: child),
               );
             },
-            child: Image.asset('/assets/logo.png', width: 170),
+            child: Image.asset('assets/logo.png', width: 170),
           ),
         ],
       ),

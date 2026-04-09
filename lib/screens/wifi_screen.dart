@@ -18,6 +18,7 @@ class _WifiScreenState extends State<WifiScreen> {
 
   List<String> _redesDetectadas = [];
   bool _isScanning = false;
+  String? _redConectadaActual; //Nueva Variable
 
   @override
   void initState() {
@@ -34,19 +35,19 @@ class _WifiScreenState extends State<WifiScreen> {
 
   // --- NUEVO: Listener mejorado para evitar bucles pesados ---
   void _configurarEscucha() async {
+    if (widget.device == null) return; // Seguridad extra
+
     await _bleService.prepararEscucha(widget.device!);
 
-    // Usamos un loop que verifica cambios cada 500ms para no saturar el procesador
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return false; // Detener si el widget ya no existe
+    // En lugar de un doWhile infinito, escucha cambios solo si el widget existe
+    Stream.periodic(const Duration(milliseconds: 800)).listen((_) {
+      if (!mounted) return; // Si ya no estás en la pantalla, se detiene
 
       if (_redesDetectadas.length != _bleService.redesWifi.length) {
         setState(() {
           _redesDetectadas = List.from(_bleService.redesWifi);
         });
       }
-      return true;
     });
   }
 
@@ -72,9 +73,11 @@ class _WifiScreenState extends State<WifiScreen> {
 
   // --- NUEVO: Función para enviar credenciales al ESP32 ---
   void _enviarCredenciales(String ssid, String pass) async {
-    // Formato sugerido: SSID,PASSWORD (Asegúrate que tu ESP32 sepa parsear esto)
-    String data = "$ssid,$pass";
-    await _bleService.enviarDatosWifi(widget.device!, data);
+    // En lugar de enviar la cadena manual "$ssid,$pass",
+    // usa la función que ya armamos en el servicio que pone el prefijo WIFI_CONNECT|
+    if (widget.device != null) {
+      await _bleService.conectarWifiESP32(widget.device!, ssid, pass);
+    }
   }
 
   @override
@@ -195,11 +198,18 @@ class _WifiScreenState extends State<WifiScreen> {
 
   // --- NUEVO: Widget de item de lista para limpiar el build ---
   Widget _itemRedWifi(String nombreRed) {
+    bool esEstaRed = _redConectadaActual == nombreRed; //Verificamos
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(15),
+        //Borde Verde Sutil
+        border: Border.all(
+          color: esEstaRed ? Colors.green.withOpacity(0.5) : Colors.transparent,
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -214,6 +224,16 @@ class _WifiScreenState extends State<WifiScreen> {
           nombreRed,
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
+        //Agregamos el "CONECTADO"
+        subtitle: esEstaRed
+            ? const Text(
+                "Conectado",
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : null,
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => _mostrarDialogoConexion(nombreRed),
       ),
@@ -325,16 +345,28 @@ class _WifiScreenState extends State<WifiScreen> {
               const Icon(Icons.check_circle, color: Colors.white, size: 70),
               const SizedBox(height: 15),
               const Text(
-                "¡Configuración enviada!",
+                "¡Datos enviada!",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
-              const SizedBox(height: 5),
-              Text(
-                red,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontWeight: FontWeight.bold,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.wifi, color: Colors.white70, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    red,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                "Conectado",
+                style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

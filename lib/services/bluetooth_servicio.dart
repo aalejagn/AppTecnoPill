@@ -1,12 +1,25 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class MiBluetoothService {
-  //Funcion para empezar a ascanear dispositivos
+  // --- PATRÓN SINGLETON ---
+  static final MiBluetoothService _instance = MiBluetoothService._internal();
+
+  factory MiBluetoothService() {
+    return _instance;
+  }
+
+  MiBluetoothService._internal();
+  // -------------------------
+
+  static const String _serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  static const String _charUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+  BluetoothDevice? dispositivoConectado;
+  BluetoothCharacteristic? _caracteristica;
+  List<String> redesWifi = [];
 
   void startScan() {
-    FlutterBluePlus.startScan(timeout: Duration(seconds: 15));
-
-    //Escuchar los resultados
+    FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
     FlutterBluePlus.scanResults.listen((resultados) {
       for (ScanResult r in resultados) {
         print(
@@ -16,78 +29,99 @@ class MiBluetoothService {
     });
   }
 
-  //Función para conectar a un dispositivo especifico
   Future<void> connectarServicio(BluetoothDevice dispositivo) async {
-    await dispositivo.connect();
-    print("Conectado a ${dispositivo.platformName}");
+    try {
+      print("[BLE] Conectando a ${dispositivo.advName}...");
+      await dispositivo.connect();
+      dispositivoConectado = dispositivo;
+      print("[BLE] Conectado a ${dispositivo.platformName}");
+      await prepararEscucha(dispositivo);
+    } catch (e) {
+      print("[BLE] Error al conectar: $e");
+    }
   }
 
-  //Envio de string a bytes para ESP32
+  Future<void> prepararEscucha(BluetoothDevice dispositivo) async {
+    //Si ya tenemos la caracteristica lista no repetir
+    if (_caracteristica != null) {
+      print("[BLE] ya estaba suscrito skip");
+      return;
+    }
+
+    try {
+      print("[BLE] Descubriendo servicios...");
+      List<BluetoothService> servicios = await dispositivo.discoverServices();
+
+      for (var servicio in servicios) {
+        if (servicio.uuid.toString() != _serviceUUID) continue;
+
+        for (var caracteristica in servicio.characteristics) {
+          if (caracteristica.uuid.toString() != _charUUID) continue;
+
+          _caracteristica = caracteristica;
+
+          await caracteristica.setNotifyValue(true);
+          print("[BLE] Suscrito a notificaciones. Listo para recibir.");
+
+          caracteristica.lastValueStream.listen((value) {
+            if (value.isEmpty) return;
+            String rawRespuesta = String.fromCharCodes(value);
+            print("[BLE] Recibido: $rawRespuesta");
+
+            // ← esto es todo lo que falta
+            if (rawRespuesta == "SCAN" ||
+                rawRespuesta == "WIFI_OK" ||
+                rawRespuesta == "WIFI_FAIL" ||
+                rawRespuesta == "ABRIENDO" ||
+                rawRespuesta.startsWith("WIFI_CONNECT"))
+              return;
+
+            redesWifi = rawRespuesta.trim().split(',');
+            print("Redes Encontradas: $redesWifi");
+          });
+
+          break;
+        }
+      }
+    } catch (e) {
+      print("[BLE] Error al preparar escucha: $e");
+    }
+  }
+
   Future<void> enviarDatosWifi(
     BluetoothDevice dispositivo,
     String datos,
   ) async {
-    //1.- Descubrir Los servicios del ESP32
-
-    List<BluetoothService> servicios = await dispositivo.discoverServices();
-
-    for (var servicio in servicios) {
-      for (var caracteristica in servicio.characteristics) {
-        //Buscamos la caracteristica que permita Escritura (write)
-        if (caracteristica.properties.write) {
-          //Convertir el texto a bytes (UTF-8) para que el ESP32 lo entienda
-          await caracteristica.write(datos.codeUnits);
-          print("Datos enviados: $datos ");
-        }
-      }
+    if (_caracteristica == null) {
+      print(
+        "[BLE] Error: caracteristica no lista, llama connectarServicio primero.",
+      );
+      return;
     }
+    print("[BLE] Enviando: $datos");
+    await _caracteristica!.write(datos.codeUnits, withoutResponse: false);
+    print("[BLE] Enviado OK.");
   }
 
-  //Escuchar al ESP32
-  //Para uso Global
-  List<String> redesWifi = [];
-
-  Future<void> prepararEscucha(BluetoothDevice dispositivo) async {
-    //La lista con todo los servicios disponibles
-    List<BluetoothService> servicios = await dispositivo.discoverServices();
-    //Entramos a un ciclo para revisar cada servicio ESP32
-    for (var servicio in servicios) {
-      // Dentro de cada servicio revisamos sus caracteristicas
-      for (var caracteristica in servicio.characteristics) {
-        // Aviso
-        if (caracteristica.properties.notify) {
-          await caracteristica.setNotifyValue(true);
-          // Flujo de datos constante, esperando que mande algo el ESP32
-          caracteristica.lastValueStream.listen((value) {
-            //Traduccion
-            String rawRespuesta = String.fromCharCodes(value);
-
-            redesWifi = rawRespuesta.split(',');
-
-            print("Redes Encontradas desde el ESP32: $redesWifi");
-          });
-        }
-      }
-    }
-  }
-
-  //Funcionra para empaquetar y enviar credenciales
   Future<void> conectarWifiESP32(
     BluetoothDevice dispositivo,
     String ssid,
     String contrasena,
   ) async {
-    //Primero sera el empaquetado, se enviara en un solo String
     String tramaFinal = "WIFI_CONNECT|$ssid|$contrasena";
-
-    print("Preparando envio de credenciales $tramaFinal");
-
-    //Reutilizar la funcion enviarDatosWifi por que ya convierte a bytes
     try {
       await enviarDatosWifi(dispositivo, tramaFinal);
       print("Protocolo de conexion enviado con exito.");
     } catch (e) {
-      print("Error al  intentar Enviar el paquete de Wifi $e");
+      print("Error al intentar Enviar el paquete de Wifi $e");
     }
+  }
+
+  // detecte desconexión
+  void limpiarConexion() {
+    dispositivoConectado = null;
+    _caracteristica = null;
+    redesWifi = [];
+    print("[BLE] Estado limpiado.");
   }
 }

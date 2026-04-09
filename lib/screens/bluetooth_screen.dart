@@ -10,39 +10,45 @@ class BluetoothScreen extends StatefulWidget {
 }
 
 class _BluetoothScreenState extends State<BluetoothScreen> {
-  // Lógica de backend
+  // Usamos la instancia única del servicio (Singleton)
   final MiBluetoothService _bluetoothService = MiBluetoothService();
   List<ScanResult> _listaDispositivos = [];
 
   @override
   void initState() {
     super.initState();
-    // Escuchamos los resultados reales del escaneo
+
+    // Escuchamos los resultados del escaneo
     FlutterBluePlus.scanResults.listen((resultados) {
+      // Filtramos dispositivos que tengan nombre (para no llenar la lista de basura)
       final listaLimpia = resultados.where((r) {
         return r.advertisementData.advName.isNotEmpty;
       }).toList();
-      
-      setState(() {
-        _listaDispositivos = listaLimpia;
-      });
+
+      if (mounted) {
+        setState(() {
+          _listaDispositivos = listaLimpia;
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Hacemos el AppBar transparente para que se vean los círculos de fondo
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Conectar TecnoPill", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Conectar TecnoPill",
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // FONDO DECORATIVOJAJAJJA
+          // FONDO DECORATIVO
           Container(color: const Color(0xFFF8F9FA)),
           Positioned(
             top: -80,
@@ -60,7 +66,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             child: _circle(const Color(0xFF3F7CAC).withOpacity(0.2), 220),
           ),
 
-          // CONTENIDO REAL
+          // CONTENIDO
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -73,19 +79,27 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     children: [
                       const Text(
                         "Dispositivos cercanos",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      // Botón de Escanear vinculado al servicio
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3F7CAC),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           _bluetoothService.startScan();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Buscando TecnoPill... 🔍"), duration: Duration(seconds: 2)),
+                            const SnackBar(
+                              content: Text("Buscando TecnoPill... 🔍"),
+                              duration: Duration(seconds: 2),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.search, size: 18),
@@ -95,51 +109,28 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  //LISTA DE DISPOSITIVOS REALES
+                  // LISTA DE DISPOSITIVOS
                   Expanded(
                     child: _listaDispositivos.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.bluetooth_searching, size: 50, color: Colors.grey[400]),
-                                const SizedBox(height: 10),
-                                Text("No hay dispositivos a la vista", style: TextStyle(color: Colors.grey[600])),
-                              ],
-                            ),
-                          )
+                        ? _buildEmptyState()
                         : ListView.builder(
                             itemCount: _listaDispositivos.length,
                             itemBuilder: (context, index) {
                               final scanResult = _listaDispositivos[index];
-                              final nombre = scanResult.advertisementData.advName;
+                              final nombre =
+                                  scanResult.advertisementData.advName;
 
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ListTile(
-                                  leading: const CircleAvatar(
-                                    backgroundColor: Color(0xFFE3F2FD),
-                                    child: Icon(Icons.bluetooth, color: Color(0xFF3F7CAC)),
-                                  ),
-                                  title: Text(
-                                    nombre,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
-                                  ),
-                                  subtitle: Text(scanResult.device.remoteId.toString(), style: const TextStyle(fontSize: 12)),
-                                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                                  onTap: () => _mostrarDialogoConexion(context, scanResult),
-                                ),
+                              // Verificamos si es el dispositivo que ya tenemos conectado
+                              bool estaConectado =
+                                  _bluetoothService
+                                      .dispositivoConectado
+                                      ?.remoteId ==
+                                  scanResult.device.remoteId;
+
+                              return _buildDeviceCard(
+                                scanResult,
+                                nombre,
+                                estaConectado,
                               );
                             },
                           ),
@@ -153,7 +144,81 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     );
   }
 
-  // Widget auxiliar para los círculos de fondo
+  // Widget para cuando no hay dispositivos
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.bluetooth_searching, size: 50, color: Colors.grey[400]),
+          const SizedBox(height: 10),
+          Text(
+            "No hay dispositivos a la vista",
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget para cada tarjeta de dispositivo
+  Widget _buildDeviceCard(
+    ScanResult scanResult,
+    String nombre,
+    bool estaConectado,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          // Cambié greenAccent por Green normal para que resalte más
+          color: estaConectado ? Colors.green : Colors.transparent,
+          width: 2.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: estaConectado
+                ? Colors.green.withOpacity(0.2)
+                : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          // El círculo del icono también cambia a verde si está conectado
+          backgroundColor: estaConectado
+              ? Colors.green[50]
+              : const Color(0xFFE3F2FD),
+          child: Icon(
+            Icons.bluetooth,
+            color: estaConectado ? Colors.green : const Color(0xFF3F7CAC),
+          ),
+        ),
+        title: Text(
+          nombre,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        // AHORA: Subtítulo dinámico
+        subtitle: Text(
+          estaConectado ? "Conectado" : scanResult.device.remoteId.toString(),
+          style: TextStyle(
+            fontSize: 12,
+            color: estaConectado ? Colors.green : Colors.black54,
+            fontWeight: estaConectado ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        trailing: estaConectado
+            ? const Icon(Icons.check_circle, color: Colors.green)
+            : const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () => _mostrarDialogoConexion(context, scanResult),
+      ),
+    );
+  }
+
   Widget _circle(Color color, double size) {
     return Container(
       width: size,
@@ -162,18 +227,24 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     );
   }
 
-  // Ventana de confirmación 
   void _mostrarDialogoConexion(BuildContext context, ScanResult resultado) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        //Usaremos el dialogcontext para el dialogo
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text("Conectar a ${resultado.advertisementData.advName}"),
-          content: const Text("¿Deseas vincular este dispositivo con TecnoPill?"),
+          content: const Text(
+            "¿Deseas vincular este dispositivo con TecnoPill?",
+          ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancelar"),
             ),
             ElevatedButton(
@@ -181,11 +252,36 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 backgroundColor: const Color(0xFF3F7CAC),
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {
-                _bluetoothService.connectarServicio(resultado.device);
-                Navigator.pop(context);
-                // 
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Cierra el diálogo
+
+                try {
+                  // USA LA VARIABLE GUARDADA
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text("Conectando..."),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+
+                  await _bluetoothService.connectarServicio(resultado.device);
+
+                  if (mounted) {
+                    setState(() {});
+                    // USA LA VARIABLE GUARDADA
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text("¡TecnoPill Conectado! ✅")),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text("Error al conectar.")),
+                    );
+                  }
+                }
               },
+
               child: const Text("Conectar"),
             ),
           ],
