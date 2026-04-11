@@ -20,16 +20,48 @@ class MiBluetoothService {
 
   // ip
   String? ipActualESP32;
+  // MiBluetoothService
+  String? nombreRedActual;
 
-  void startScan() {
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
-    FlutterBluePlus.scanResults.listen((resultados) {
-      for (ScanResult r in resultados) {
-        print(
-          '${r.device.remoteId}:"${r.advertisementData.advName}" Encontrado',
-        );
+  /// Inicia el escaneo de dispositivos cercanos de forma segura.
+  /// El sistema verifica primero si el adaptador está encendido para evitar cierres inesperados.
+  void startScan() async {
+    try {
+      // 1. El sistema obtiene el estado actual del Bluetooth.
+      BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
+
+      // 2. Si el Bluetooth está apagado, el sistema detiene el proceso para prevenir errores.
+      if (state != BluetoothAdapterState.on) {
+        print("[BLE] El escaneo no puede iniciar: Bluetooth apagado.");
+        return;
       }
-    });
+
+      // 3. El sistema verifica si ya hay un escaneo activo para no duplicar procesos.
+      if (FlutterBluePlus.isScanningNow) {
+        print("[BLE] Ya se encuentra realizando un escaneo.");
+        return;
+      }
+
+      print("[BLE] Iniciando escaneo de 15 segundos...");
+
+      // 4. Ejecución del escaneo con manejo de excepciones.
+      await FlutterBluePlus.startScan(
+        timeout: const Duration(seconds: 15),
+        androidUsesFineLocation:
+            true, // Importante para la precisión en Android.
+      );
+
+      FlutterBluePlus.scanResults.listen((resultados) {
+        for (ScanResult r in resultados) {
+          print(
+            '${r.device.remoteId}:"${r.advertisementData.advName}" Encontrado',
+          );
+        }
+      });
+    } catch (e) {
+      // El sistema captura cualquier error técnico para evitar que la app colapse.
+      print("[BLE] Error crítico durante el escaneo: $e");
+    }
   }
 
   Future<void> connectarServicio(BluetoothDevice dispositivo) async {

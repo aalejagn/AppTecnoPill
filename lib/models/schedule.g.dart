@@ -47,8 +47,13 @@ const ScheduleSchema = CollectionSchema(
       name: r'minutoProxima',
       type: IsarType.long,
     ),
-    r'tomasRestantes': PropertySchema(
+    r'pacienteNombre': PropertySchema(
       id: 6,
+      name: r'pacienteNombre',
+      type: IsarType.string,
+    ),
+    r'tomasRestantes': PropertySchema(
+      id: 7,
       name: r'tomasRestantes',
       type: IsarType.long,
     )
@@ -88,6 +93,12 @@ int _scheduleEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.medicamento.length * 3;
+  {
+    final value = object.pacienteNombre;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -103,7 +114,8 @@ void _scheduleSerialize(
   writer.writeLong(offsets[3], object.intervaloMinutos);
   writer.writeString(offsets[4], object.medicamento);
   writer.writeLong(offsets[5], object.minutoProxima);
-  writer.writeLong(offsets[6], object.tomasRestantes);
+  writer.writeString(offsets[6], object.pacienteNombre);
+  writer.writeLong(offsets[7], object.tomasRestantes);
 }
 
 Schedule _scheduleDeserialize(
@@ -120,7 +132,8 @@ Schedule _scheduleDeserialize(
   object.intervaloMinutos = reader.readLong(offsets[3]);
   object.medicamento = reader.readString(offsets[4]);
   object.minutoProxima = reader.readLong(offsets[5]);
-  object.tomasRestantes = reader.readLong(offsets[6]);
+  object.pacienteNombre = reader.readStringOrNull(offsets[6]);
+  object.tomasRestantes = reader.readLong(offsets[7]);
   return object;
 }
 
@@ -144,6 +157,8 @@ P _scheduleDeserializeProp<P>(
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -883,6 +898,159 @@ extension ScheduleQueryFilter
     });
   }
 
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'pacienteNombre',
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'pacienteNombre',
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition> pacienteNombreEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition> pacienteNombreBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'pacienteNombre',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'pacienteNombre',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition> pacienteNombreMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'pacienteNombre',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'pacienteNombre',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterFilterCondition>
+      pacienteNombreIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'pacienteNombre',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Schedule, Schedule, QAfterFilterCondition> tomasRestantesEqualTo(
       int value) {
     return QueryBuilder.apply(this, (query) {
@@ -1018,6 +1186,18 @@ extension ScheduleQuerySortBy on QueryBuilder<Schedule, Schedule, QSortBy> {
     });
   }
 
+  QueryBuilder<Schedule, Schedule, QAfterSortBy> sortByPacienteNombre() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pacienteNombre', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterSortBy> sortByPacienteNombreDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pacienteNombre', Sort.desc);
+    });
+  }
+
   QueryBuilder<Schedule, Schedule, QAfterSortBy> sortByTomasRestantes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tomasRestantes', Sort.asc);
@@ -1117,6 +1297,18 @@ extension ScheduleQuerySortThenBy
     });
   }
 
+  QueryBuilder<Schedule, Schedule, QAfterSortBy> thenByPacienteNombre() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pacienteNombre', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Schedule, Schedule, QAfterSortBy> thenByPacienteNombreDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pacienteNombre', Sort.desc);
+    });
+  }
+
   QueryBuilder<Schedule, Schedule, QAfterSortBy> thenByTomasRestantes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tomasRestantes', Sort.asc);
@@ -1169,6 +1361,14 @@ extension ScheduleQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Schedule, Schedule, QDistinct> distinctByPacienteNombre(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pacienteNombre',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Schedule, Schedule, QDistinct> distinctByTomasRestantes() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'tomasRestantes');
@@ -1217,6 +1417,12 @@ extension ScheduleQueryProperty
   QueryBuilder<Schedule, int, QQueryOperations> minutoProximaProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'minutoProxima');
+    });
+  }
+
+  QueryBuilder<Schedule, String?, QQueryOperations> pacienteNombreProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pacienteNombre');
     });
   }
 

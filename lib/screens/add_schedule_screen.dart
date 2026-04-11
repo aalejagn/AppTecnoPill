@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import '../main.dart'; // Acceso a la instancia global de Isar
 import '../models/schedule.dart';
+import '../models/patient.dart'; // Importación del modelo de pacientes
 import '../services/wifi_servicio.dart';
 
 class AddScheduleScreen extends StatefulWidget {
@@ -20,6 +21,12 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   TimeOfDay _horaSeleccionada = TimeOfDay.now();
   List<int> _casillerosOcupados = [];
 
+  /// Lista que almacena los pacientes recuperados de la base de datos.
+  List<Patient> _pacientesDisponibles = [];
+
+  /// Almacena el nombre del paciente seleccionado en el menú desplegable.
+  String? _pacienteSeleccionado;
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +36,13 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
   // Consulta a Isar para identificar qué casilleros (1 o 2) ya tienen un horario activo
   void _obtenerCasillerosEnUso() async {
+    // El sistema recupera todos los horarios para marcar casilleros en uso.
     final registros = await isar.schedules.where().findAll();
+    // El sistema recupera la lista completa de pacientes registrados.
+    final pacientes = await isar.patients.where().findAll();
     setState(() {
       _casillerosOcupados = registros.map((s) => s.casillero!).toList();
+      _pacientesDisponibles = pacientes;
     });
   }
 
@@ -43,7 +54,16 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         .filter()
         .casilleroEqualTo(_casilleroSeleccionado)
         .findFirst();
-
+    // El sistema valida que se haya seleccionado un paciente y un casillero.
+    if (_pacienteSeleccionado == null ||
+        _casilleroSeleccionado == null ||
+        _nombreController.text.isEmpty) {
+      _mostrarAlerta(
+        "Información Incompleta",
+        "Por favor seleccione un paciente, un casillero y el nombre del medicamento.",
+      );
+      return;
+    }
     if (existe != null) {
       // Notificación al usuario de que el espacio ya está en uso para evitar errores de índice único
       _mostrarAlerta(
@@ -71,6 +91,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     // Instanciación del modelo Schedule con los datos capturados en pantalla
     final nuevoHorario = Schedule()
       ..medicamento = _nombreController.text
+      ..pacienteNombre =
+          _pacienteSeleccionado // Se asigna el paciente a la etiqueta.
       ..casillero = _casilleroSeleccionado
       ..horaProxima = _horaSeleccionada.hour
       ..minutoProxima = _horaSeleccionada.minute
@@ -136,6 +158,42 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              "Paciente Responsable",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            SizedBox(height: 10),
+
+            /// Menú desplegable para seleccionar un paciente de la base de datos Isar.
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  hint: Text("Seleccione un paciente"),
+                  value: _pacienteSeleccionado,
+                  // El sistema mapea la lista de pacientes a elementos del menú.
+                  items: _pacientesDisponibles.map((p) {
+                    return DropdownMenuItem<String>(
+                      value: p.nombreCompleto,
+                      child: Text(p.nombreCompleto),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _pacienteSeleccionado = val;
+                    });
+                  },
+                ),
+              ),
+            ),
+
+            SizedBox(height: 25), // Espacio antes de los casilleros
+
             Text(
               "Selección de Casillero",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

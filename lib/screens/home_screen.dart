@@ -117,6 +117,17 @@ class HomeScreen extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                //Nuevo: Nombre del paciente asignado
+                                Text(
+                                  "Paciente: ${s.pacienteNombre ?? "No asignado"}",
+                                  style: const TextStyle(
+                                    color: Color(0xFF7B61FF),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+
                                 Text(
                                   "Casillero ${s.casillero}",
                                   style: TextStyle(

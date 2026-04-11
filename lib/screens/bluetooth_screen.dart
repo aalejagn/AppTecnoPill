@@ -93,14 +93,25 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          _bluetoothService.startScan();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Buscando TecnoPill... 🔍"),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                        // El sistema requiere 'async' aquí para poder usar 'await' adentro
+                        onPressed: () async {
+                          // 1. El sistema verifica de forma asíncrona el estado del adaptador
+                          BluetoothAdapterState state =
+                              await FlutterBluePlus.adapterState.first;
+
+                          if (state != BluetoothAdapterState.on) {
+                            // 2. Si el Bluetooth está apagado, el sistema muestra la alerta de seguridad
+                            _mostrarAlertaBluetooth(context);
+                          } else {
+                            // 3. El sistema inicia el escaneo si el hardware está listo
+                            _bluetoothService.startScan();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Buscando TecnoPill... 🔍"),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
                         },
                         icon: const Icon(Icons.search, size: 18),
                         label: const Text("Escanear"),
@@ -287,6 +298,48 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _mostrarAlertaBluetooth(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.bluetooth_disabled, color: Colors.redAccent),
+            SizedBox(width: 10),
+            Text("Bluetooth Apagado"),
+          ],
+        ),
+        content: const Text(
+          "Para buscar tu TecnoPill, necesitas activar el Bluetooth de tu dispositivo.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Entendido"),
+          ),
+          // En Android, puedes intentar pedir que se encienda automáticamente:
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3F7CAC),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(context);
+              // Intenta encenderlo (Solo funciona en Android)
+              try {
+                await FlutterBluePlus.turnOn();
+              } catch (e) {
+                print("No se pudo encender automáticamente: $e");
+              }
+            },
+            child: const Text("Activar ahora"),
+          ),
+        ],
+      ),
     );
   }
 }

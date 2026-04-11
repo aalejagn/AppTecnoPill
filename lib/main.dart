@@ -15,9 +15,11 @@ import 'services/bluetooth_servicio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:isar/isar.dart';
 import 'models/schedule.dart'; // Tu nuevo modelo
+import 'models/patient.dart';
 
-//Variable global
+// Variable global
 late Isar isar;
+
 void main() async {
   // 1. Asegurar que los widgets estén listos
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +27,10 @@ void main() async {
   // 2. Obtener el directorio para guardar la base de datos
   final dir = await getApplicationDocumentsDirectory();
 
-  // 3. Abrir Isar con el esquema de Schedule
-  isar = await Isar.open(
-    [ScheduleSchema], 
-    directory: dir.path,
-  );
+  // 3. Abrir Isar con los esquemas de Schedule y Patient
+  // Es vital agregar PatientSchema aquí para que la base de datos pueda manejar pacientes
+  isar = await Isar.open([ScheduleSchema, PatientSchema], directory: dir.path);
+
   runApp(MyApp());
 }
 

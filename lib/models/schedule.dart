@@ -7,11 +7,12 @@ class Schedule {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  int? casillero; //1 al 2
+  int? casillero;
 
   late String medicamento;
-  late int horaProxima; // 0-23
-  late int minutoProxima; // 0-59
+  String? pacienteNombre; // <--- Nuevo campo para el nombre del paciente
+  late int horaProxima;
+  late int minutoProxima;
   late int intervaloMinutos;
   late int tomasRestantes;
   late DateTime fechaCreacion;

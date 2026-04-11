@@ -24,6 +24,9 @@ class _WifiScreenState extends State<WifiScreen> {
   void initState() {
     super.initState();
     _configurarEscucha();
+    // Recuperamos el nombre si ya se había conectado antes
+    _redConectadaActual = _bleService.nombreRedActual;
+    _configurarEscucha();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_firstTime) {
@@ -311,7 +314,14 @@ class _WifiScreenState extends State<WifiScreen> {
 
                           // Simulación de espera de respuesta
                           await Future.delayed(const Duration(seconds: 2));
-
+                          // --- ESTA ES LA PARTE CLAVE ---
+                          setState(() {
+                            _redConectadaActual =
+                                nombreRed; // Marcamos esta red como la activa
+                            _bleService.nombreRedActual =
+                                nombreRed; // Lo guardamos en el servicio
+                          });
+                          // ------------------------------
                           if (mounted) {
                             Navigator.pop(context); // Cierra diálogo de input
                             _mostrarExito(nombreRed); // Muestra éxito
