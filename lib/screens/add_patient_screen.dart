@@ -1,161 +1,262 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../models/patient.dart';
+import 'package:drift/drift.dart' hide Column;
+import '../database/app_database.dart';
 
-/// Pantalla encargada de gestionar el registro de nuevos pacientes en la base de datos local.
 class AddPatientScreen extends StatefulWidget {
+  final Patient? patient;
+
+  const AddPatientScreen({super.key, this.patient});
+
   @override
-  _AddPatientScreenState createState() => _AddPatientScreenState();
+  State<AddPatientScreen> createState() => _AddPatientScreenState();
 }
 
 class _AddPatientScreenState extends State<AddPatientScreen> {
-  /// Controladores de texto para capturar la entrada del usuario en los campos de formulario.
   final _nombreController = TextEditingController();
   final _paternoController = TextEditingController();
   final _maternoController = TextEditingController();
-  final _telefonoController =
-      TextEditingController(); // Controlador para el número telefónico.
+  final _telefonoController = TextEditingController();
 
-  /// Almacena la fecha seleccionada, inicializada por defecto en el año 2000.
   DateTime _fechaSeleccionada = DateTime(2000, 1, 1);
 
-  /// Ejecuta la persistencia de los datos en la base de datos Isar y gestiona la retroalimentación visual.
-  void _guardarPaciente() async {
-    // El sistema valida que los campos obligatorios no se encuentren vacíos.
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 🔥 SI ES EDICIÓN, LLENA CAMPOS
+    if (widget.patient != null) {
+      final p = widget.patient!;
+      _nombreController.text = p.nombre;
+      _paternoController.text = p.apellidoPaterno;
+      _maternoController.text = p.apellidoMaterno;
+      _telefonoController.text = p.telefono ?? '';
+      _fechaSeleccionada = p.fechaNacimiento;
+    }
+  }
+
+  Future<void> _guardarPaciente() async {
     if (_nombreController.text.isEmpty || _paternoController.text.isEmpty) {
-      _mostrarAlerta(
-        "Campos Requeridos",
-        "Por favor, ingrese al menos el nombre y el apellido paterno.",
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Faltan datos obligatorios")),
       );
       return;
     }
 
-    // Se crea una instancia del modelo Patient con la información recolectada de la interfaz.
-    final nuevoPaciente = Patient()
-      ..nombre = _nombreController.text
-      ..apellidoPaterno = _paternoController.text
-      ..apellidoMaterno = _maternoController.text
-      ..telefono = _telefonoController
-          .text // El sistema asigna el teléfono capturado.
-      ..fechaNacimiento = _fechaSeleccionada;
+    setState(() => _isLoading = true);
 
-    // Se realiza una transacción de escritura asíncrona en la colección de pacientes de Isar.
-    await isar.writeTxn(() async {
-      await isar.patients.put(nuevoPaciente);
-    });
+    try {
+      final data = PatientsCompanion(
+        nombre: Value(_nombreController.text.trim()),
+        apellidoPaterno: Value(_paternoController.text.trim()),
+        apellidoMaterno: Value(_maternoController.text.trim()),
+        telefono: Value(_telefonoController.text.trim()),
+        fechaNacimiento: Value(_fechaSeleccionada),
+      );
 
-    // El sistema despliega un cuadro de diálogo informativo para confirmar el éxito de la operación.
-    showDialog(
-      context: context,
-      barrierDismissible:
-          false, // El usuario debe presionar el botón para cerrar la alerta.
-      builder: (context) => AlertDialog(
-        title: Text("Registro Exitoso"),
-        content: Text(
-          "Los datos del paciente han sido almacenados correctamente.",
+      // 🔥 CREATE O UPDATE
+      if (widget.patient == null) {
+        await db.insertPatient(data);
+      } else {
+        await db.updatePatient(widget.patient!.id, data);
+      }
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF7B61FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                const Text(
+                  "¡Guardado!",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Paciente guardado correctamente.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7B61FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Continuar"),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // El navegador cierra el diálogo y posteriormente regresa a la pantalla anterior.
-              Navigator.pop(context); // Cierra la alerta.
-              Navigator.pop(context); // Regresa a la pantalla de inicio.
-            },
-            child: Text("ACEPTAR"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Despliega una alerta genérica para mensajes de error o validación.
-  void _mostrarAlerta(String titulo, String mensaje) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(titulo),
-        content: Text(mensaje),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
-          ),
-        ],
-      ),
-    );
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al guardar")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final esEdicion = widget.patient != null;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Datos del Paciente')),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          // Campo de entrada para el nombre de pila.
-          TextField(
-            controller: _nombreController,
-            decoration: InputDecoration(labelText: 'Nombre'),
-          ),
-          // Campo de entrada para el primer apellido.
-          TextField(
-            controller: _paternoController,
-            decoration: InputDecoration(labelText: 'Apellido Paterno'),
-          ),
-          // Campo de entrada para el segundo apellido.
-          TextField(
-            controller: _maternoController,
-            decoration: InputDecoration(labelText: 'Apellido Materno'),
-          ),
-          // Campo de entrada para el teléfono con configuración de teclado numérico.
-          TextField(
-            controller: _telefonoController,
-            keyboardType: TextInputType
-                .phone, // El sistema optimiza el teclado para números telefónicos.
-            decoration: InputDecoration(
-              labelText: 'Teléfono de contacto',
-              hintText: 'Ej. 9611234567',
-              prefixIcon: Icon(Icons.phone),
-            ),
-          ),
+      backgroundColor: const Color(0xFFF7F7FB),
+      appBar: AppBar(
+        title: Text(esEdicion ? "Editar Paciente" : "Nuevo Paciente"),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF7B61FF),
+        foregroundColor: Colors.white,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Card(
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _input("Nombre", _nombreController, Icons.person),
+                      _input("Apellido Paterno", _paternoController, null),
+                      _input("Apellido Materno", _maternoController, null),
+                      _input("Teléfono", _telefonoController, Icons.phone,
+                          isPhone: true),
 
-          SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
-          // Elemento interactivo para la selección de la fecha de nacimiento.
-          ListTile(
-            title: Text(
-              "Fecha de Nacimiento: ${_fechaSeleccionada.day}/${_fechaSeleccionada.month}/${_fechaSeleccionada.year}",
-            ),
-            trailing: Icon(Icons.calendar_today),
-            onTap: () async {
-              // El sistema invoca el selector de fecha nativo del sistema operativo.
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _fechaSeleccionada,
-                firstDate: DateTime(1920),
-                lastDate: DateTime.now(),
-              );
-              // Si el usuario confirma una fecha, el estado de la pantalla se actualiza.
-              if (picked != null) setState(() => _fechaSeleccionada = picked);
-            },
+                      ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        tileColor: Colors.grey.shade100,
+                        leading: const Icon(Icons.calendar_month),
+                        title: const Text("Fecha de nacimiento"),
+                        subtitle: Text(
+                          "${_fechaSeleccionada.day}/${_fechaSeleccionada.month}/${_fechaSeleccionada.year}",
+                        ),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _fechaSeleccionada,
+                            firstDate: DateTime(1920),
+                            lastDate: DateTime.now(),
+                          );
+                          if (picked != null) {
+                            setState(() => _fechaSeleccionada = picked);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7B61FF),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _isLoading ? null : _guardarPaciente,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          esEdicion ? "ACTUALIZAR" : "GUARDAR PACIENTE",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
 
-          SizedBox(height: 30),
-
-          // Botón principal que activa el proceso de guardado.
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF7B61FF),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 15),
-            ),
-            onPressed: _guardarPaciente,
-            child: Text(
-              'GUARDAR DATOS',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+  Widget _input(
+    String label,
+    TextEditingController c,
+    IconData? icon, {
+    bool isPhone = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: c,
+        keyboardType:
+            isPhone ? TextInputType.phone : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icon != null ? Icon(icon) : null,
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
           ),
-        ],
+        ),
       ),
     );
   }

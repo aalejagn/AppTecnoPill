@@ -11,31 +11,25 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Bluetooth
   flutter_blue_plus: ^1.34.0
-
-  # Permisos
   permission_handler: ^11.3.1
-
   cupertino_icons: ^1.0.8
 
-  # Base de datos Isar (FIX ESTABILIZADO)
-  isar: 3.1.0+1
-  isar_flutter_libs: 3.1.0+1
+  drift: ^2.20.0
+  sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.2
+  path: ^1.9.0
 
-  # HTTP
   http: ^1.6.0
-
-  # Fechas / formato
   intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  isar_generator: 3.1.0+1
-  build_runner: ^2.4.0
+  drift_dev: ^2.20.0
+  build_runner: ^2.4.8
+  analyzer: ^6.4.1
 
   flutter_lints: ^6.0.0
 

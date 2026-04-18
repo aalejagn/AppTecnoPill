@@ -1,150 +1,219 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
-import '../main.dart'; // Acceso a la instancia global de Isar
-import '../models/schedule.dart';
-import '../models/patient.dart'; // Importación del modelo de pacientes
+import 'package:drift/drift.dart' hide Column;
+import '../database/app_database.dart';
 import '../services/wifi_servicio.dart';
 
 class AddScheduleScreen extends StatefulWidget {
+  final Schedule? schedule;
+
+  const AddScheduleScreen({super.key, this.schedule});
+
   @override
-  _AddScheduleScreenState createState() => _AddScheduleScreenState();
+  State<AddScheduleScreen> createState() => _AddScheduleScreenState();
 }
 
 class _AddScheduleScreenState extends State<AddScheduleScreen> {
-  // Controladores para la captura de texto de los inputs
   final _nombreController = TextEditingController();
   final _intervaloController = TextEditingController();
   final _diasController = TextEditingController();
 
-  // Variables de estado para la selección de datos
   int? _casilleroSeleccionado;
   TimeOfDay _horaSeleccionada = TimeOfDay.now();
+
   List<int> _casillerosOcupados = [];
-
-  /// Lista que almacena los pacientes recuperados de la base de datos.
   List<Patient> _pacientesDisponibles = [];
-
-  /// Almacena el nombre del paciente seleccionado en el menú desplegable.
   String? _pacienteSeleccionado;
 
   @override
   void initState() {
     super.initState();
-    // Ejecución de la carga inicial de casilleros desde la base de datos
     _obtenerCasillerosEnUso();
+
+    // 🔥 EDIT MODE
+    if (widget.schedule != null) {
+      final s = widget.schedule!;
+
+      _nombreController.text = s.medicamento;
+      _intervaloController.text = (s.intervaloMinutos ~/ 60).toString();
+      _diasController.text =
+          (s.tomasRestantes ~/ (s.intervaloMinutos ~/ 60)).toString();
+
+      _casilleroSeleccionado = s.casillero;
+      _horaSeleccionada =
+          TimeOfDay(hour: s.horaProxima, minute: s.minutoProxima);
+
+      _pacienteSeleccionado = s.pacienteNombre;
+    }
   }
 
-  // Consulta a Isar para identificar qué casilleros (1 o 2) ya tienen un horario activo
-  void _obtenerCasillerosEnUso() async {
-    // El sistema recupera todos los horarios para marcar casilleros en uso.
-    final registros = await isar.schedules.where().findAll();
-    // El sistema recupera la lista completa de pacientes registrados.
-    final pacientes = await isar.patients.where().findAll();
+  Future<void> _obtenerCasillerosEnUso() async {
+    final registros = await db.getAllSchedules();
+    final pacientes = await db.getAllPatients();
+
     setState(() {
-      _casillerosOcupados = registros.map((s) => s.casillero!).toList();
+      _casillerosOcupados = registros
+          .where((s) =>
+              widget.schedule == null || s.id != widget.schedule!.id)
+          .map((s) => s.casillero)
+          .toList();
+
       _pacientesDisponibles = pacientes;
     });
   }
 
-  // Proceso principal de guardado y sincronización
-  // Proceso principal de guardado y sincronización
   void _procesarGuardado() async {
-    // Validación: El sistema verifica si el casillero seleccionado ya tiene un registro en Isar
-    final existe = await isar.schedules
-        .filter()
-        .casilleroEqualTo(_casilleroSeleccionado)
-        .findFirst();
-    // El sistema valida que se haya seleccionado un paciente y un casillero.
     if (_pacienteSeleccionado == null ||
         _casilleroSeleccionado == null ||
         _nombreController.text.isEmpty) {
-      _mostrarAlerta(
-        "Información Incompleta",
-        "Por favor seleccione un paciente, un casillero y el nombre del medicamento.",
-      );
-      return;
-    }
-    if (existe != null) {
-      // Notificación al usuario de que el espacio ya está en uso para evitar errores de índice único
-      _mostrarAlerta(
-        "Casillero Ocupado",
-        "Este casillero ya tiene un medicamento asignado.",
-      );
-      _obtenerCasillerosEnUso(); // Actualización de la interfaz para bloquear el casillero
+      _mostrarAlerta("Faltan datos", "Completa todos los campos");
       return;
     }
 
-    // Validación de seguridad por si no se llenaron los campos
-    if (_nombreController.text.isEmpty || _casilleroSeleccionado == null) {
-      _mostrarAlerta(
-        "Campos incompletos",
-        "Por favor, llena el nombre y selecciona un casillero.",
-      );
-      return;
-    }
+    final existe = await db.getScheduleByCasillero(_casilleroSeleccionado!);
+      if (existe != null && widget.schedule == null) {
+        _mostrarAlerta("Casillero ocupado", "Ya tiene un medicamento");
+        return;
+      }
 
-    // Cálculo de la logística del tratamiento (tomas totales)
     int horas = int.tryParse(_intervaloController.text) ?? 8;
     int dias = int.tryParse(_diasController.text) ?? 1;
     int tomasTotales = (dias * 24) ~/ horas;
 
-    // Instanciación del modelo Schedule con los datos capturados en pantalla
-    final nuevoHorario = Schedule()
-      ..medicamento = _nombreController.text
-      ..pacienteNombre =
-          _pacienteSeleccionado // Se asigna el paciente a la etiqueta.
-      ..casillero = _casilleroSeleccionado
-      ..horaProxima = _horaSeleccionada.hour
-      ..minutoProxima = _horaSeleccionada.minute
-      ..intervaloMinutos = horas * 60
-      ..tomasRestantes = tomasTotales
-      ..fechaCreacion = DateTime.now();
+    final data = SchedulesCompanion(
+      medicamento: Value(_nombreController.text),
+      pacienteNombre: Value(_pacienteSeleccionado!),
+      casillero: Value(_casilleroSeleccionado!),
+      horaProxima: Value(_horaSeleccionada.hour),
+      minutoProxima: Value(_horaSeleccionada.minute),
+      intervaloMinutos: Value(horas * 60),
+      tomasRestantes: Value(tomasTotales),
+      fechaCreacion: Value(DateTime.now()),
+    );
 
     try {
-      // Ejecución de la transacción de escritura en la base de datos local
-      await isar.writeTxn(() async {
-        await isar.schedules.put(nuevoHorario);
-      });
-
-      // Intento de comunicación con el hardware TecnoPill mediante protocolo HTTP/WiFi
-      bool exitoWifi = await WifiServicio().enviarHorario(nuevoHorario);
-
-      if (exitoWifi) {
-        _mostrarAlerta(
-          "Éxito",
-          "Horario guardado y sincronizado con TecnoPill",
-        );
+      // 🔥 CREATE / UPDATE
+      if (widget.schedule == null) {
+        await db.insertSchedule(data);
       } else {
-        // Notificación de guardado local exitoso pero falla en la sincronización inalámbrica
-        _mostrarAlerta(
-          "Aviso",
-          "Guardado en el celular, pero no se pudo contactar al TecnoPill por WiFi",
-        );
+        await db.updateSchedule(widget.schedule!.id, data);
       }
 
-      // Finalización del proceso y retorno a la pantalla principal tras un retraso de cortesía
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) Navigator.pop(context, true);
-      });
+      if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      // Captura de excepciones críticas durante el proceso de persistencia
-      _mostrarAlerta("Error Fatal", "No se pudo guardar el horario: $e");
+      _mostrarAlerta("Error", "$e");
     }
   }
 
-  // Generación de cuadros de diálogo para retroalimentación al usuario
-  void _mostrarAlerta(String titulo, String mensaje) {
+  void _mostrarAlerta(String t, String m) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(titulo),
-        content: Text(mensaje),
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(t),
+        content: Text(m),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
             child: Text("OK"),
-          ),
+            onPressed: () => Navigator.pop(context),
+          )
         ],
+      ),
+    );
+  }
+
+  Widget _campo(String label, TextEditingController c, {bool number = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: c,
+        keyboardType: number ? TextInputType.number : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _botonDegradado() {
+    return GestureDetector(
+      onTap: _procesarGuardado,
+      child: Container(
+        height: 55,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF7B61FF), Color(0xFF9C6BFF)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            )
+          ],
+        ),
+        child: const Center(
+          child: Text(
+            "SINCRONIZAR HORARIO",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _casillero(int num) {
+    bool ocupado = _casillerosOcupados.contains(num);
+    bool sel = _casilleroSeleccionado == num;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: ocupado ? null : () => setState(() => _casilleroSeleccionado = num),
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          margin: EdgeInsets.all(6),
+          height: 85,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: sel
+                ? LinearGradient(colors: [Color(0xFF7B61FF), Color(0xFFB39DFF)])
+                : null,
+            color: ocupado ? Colors.grey.shade300 : Colors.white,
+            border: Border.all(
+              color: sel ? Colors.transparent : Colors.grey.shade300,
+            ),
+            boxShadow: sel
+                ? [BoxShadow(color: Colors.purple.withOpacity(0.3), blurRadius: 10)]
+                : [],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                ocupado ? Icons.lock : Icons.medication,
+                color: sel ? Colors.white : Colors.black54,
+              ),
+              SizedBox(height: 4),
+              Text(
+                "Casillero $num",
+                style: TextStyle(
+                  color: sel ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -152,186 +221,106 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Configurar TecnoPill')),
+      backgroundColor: Color(0xFFF6F6FB),
+      appBar: AppBar(
+        title: Text("Configurar TecnoPill"),
+        backgroundColor: Color(0xFF7B61FF),
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Paciente Responsable",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(height: 10),
 
-            /// Menú desplegable para seleccionar un paciente de la base de datos Isar.
+            Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
-                  hint: Text("Seleccione un paciente"),
+                  hint: Text("Selecciona paciente"),
                   value: _pacienteSeleccionado,
-                  // El sistema mapea la lista de pacientes a elementos del menú.
                   items: _pacientesDisponibles.map((p) {
-                    return DropdownMenuItem<String>(
-                      value: p.nombreCompleto,
-                      child: Text(p.nombreCompleto),
+                    return DropdownMenuItem(
+                      value: "${p.nombre} ${p.apellidoPaterno}",
+                      child: Text("${p.nombre} ${p.apellidoPaterno}"),
                     );
                   }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _pacienteSeleccionado = val;
-                    });
-                  },
+                  onChanged: (v) => setState(() => _pacienteSeleccionado = v),
                 ),
               ),
             ),
 
-            SizedBox(height: 25), // Espacio antes de los casilleros
+            SizedBox(height: 20),
 
-            Text(
-              "Selección de Casillero",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(height: 15),
+            Text("Casilleros", style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [1, 2].map(_casillero).toList()),
 
-            // Renderizado de los dos casilleros disponibles
-            Row(
-              children: [1, 2].map((num) {
-                bool estaOcupado = _casillerosOcupados.contains(num);
-                bool esSeleccionado = _casilleroSeleccionado == num;
+            SizedBox(height: 20),
 
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: estaOcupado
-                        ? null
-                        : () => setState(() => _casilleroSeleccionado = num),
-                    child: Container(
-                      margin: EdgeInsets.all(5),
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: estaOcupado
-                            ? Colors.grey[300]
-                            : (esSeleccionado
-                                  ? Color(0xFF7B61FF)
-                                  : Colors.white),
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(
-                          color: esSeleccionado
-                              ? Colors.deepPurple
-                              : Colors.grey[300]!,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            estaOcupado ? Icons.lock : Icons.medication,
-                            color: esSeleccionado
-                                ? Colors.white
-                                : Colors.black54,
-                          ),
-                          Text(
-                            "Casillero $num",
-                            style: TextStyle(
-                              color: esSeleccionado
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+            _campo("Medicamento", _nombreController),
 
-            SizedBox(height: 25),
+            const SizedBox(height: 10),
 
-            // Captura del nombre del fármaco
-            TextField(
-              controller: _nombreController,
-              autofillHints: null, //
-              enableSuggestions:
-                  false, // Desactiva sugerencias si el teclado se pone rebelde
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: 'Nombre del Medicamento',
-                border: OutlineInputBorder(),
+            // HORA
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.access_time,
+                    color: Color(0xFF7B61FF)),
+                title: const Text("Hora"),
+                subtitle: Text(
+                  _horaSeleccionada.format(context),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(Icons.arrow_drop_down),
+                onTap: () async {
+                  final t = await showTimePicker(
+                    context: context,
+                    initialTime: _horaSeleccionada,
+                  );
+                  if (t != null) {
+                    setState(() => _horaSeleccionada = t);
+                  }
+                },
               ),
             ),
-            SizedBox(height: 15),
 
-            // Selección de la hora de inicio mediante TimePicker nativo
-            ListTile(
-              tileColor: Colors.blue[50],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              title: Text("Primera toma: ${_horaSeleccionada.format(context)}"),
-              trailing: Icon(Icons.access_time),
-              onTap: () async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime: _horaSeleccionada,
-                );
-                if (time != null) setState(() => _horaSeleccionada = time);
-              },
-            ),
+            const SizedBox(height: 10),
 
-            SizedBox(height: 15),
-
-            // Entradas numéricas para frecuencia y duración del tratamiento
+            // INTERVALO + DIAS
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _intervaloController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Cada (horas)',
-                      border: OutlineInputBorder(),
-                    ),
+                  child: _campo(
+                    "Cada (horas)",
+                    _intervaloController,
+                    number: true,
                   ),
                 ),
-                SizedBox(width: 15),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: TextField(
-                    controller: _diasController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Por (días)',
-                      border: OutlineInputBorder(),
-                    ),
+                  child: _campo(
+                    "Días",
+                    _diasController,
+                    number: true,
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: 30),
-
-            // Botón de ejecución del protocolo de guardado
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF7B61FF),
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: _procesarGuardado,
-                child: Text(
-                  'SINCRONIZAR HORARIO',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            const SizedBox(height: 20),
+            _botonDegradado(),
           ],
         ),
       ),

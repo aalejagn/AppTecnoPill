@@ -10,28 +10,14 @@ import 'screens/splash_screen.dart';
 import 'screens/wifi_screen.dart';
 import 'screens/bluetooth_screen.dart';
 import 'services/bluetooth_servicio.dart';
+import 'database/app_database.dart';
 
-//Base de datos
-import 'package:path_provider/path_provider.dart';
-import 'package:isar/isar.dart';
-import 'models/schedule.dart'; // Tu nuevo modelo
-import 'models/patient.dart';
-
-// Variable global
-late Isar isar;
+late AppDatabase database;
 
 void main() async {
-  // 1. Asegurar que los widgets estén listos
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 2. Obtener el directorio para guardar la base de datos
-  final dir = await getApplicationDocumentsDirectory();
-
-  // 3. Abrir Isar con los esquemas de Schedule y Patient
-  // Es vital agregar PatientSchema aquí para que la base de datos pueda manejar pacientes
-  isar = await Isar.open([ScheduleSchema, PatientSchema], directory: dir.path);
-
-  runApp(MyApp());
+  database = AppDatabase();
+  runApp(MyApp());  
 }
 
 class MyApp extends StatelessWidget {
@@ -128,26 +114,20 @@ class _MainScreenState extends State<MainScreen>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final fabCenterX = screenWidth / 2;
-    // Posicion de botones
     final fabCenterY =
         MediaQuery.of(context).size.height - kBottomNavigationBarHeight - 80;
 
-    const double radius = 95; // <-- reducido de 130 a 95
+    const double radius = 95;
     const double btnSize = 64;
 
     return Scaffold(
       extendBody: true,
-      appBar: AppBar(
-        title: Text("Mi App"),
-        backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
-
+      
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(color: Color(0xFF7B61FF)),
               child: Text(
                 "Menú",
@@ -159,11 +139,9 @@ class _MainScreenState extends State<MainScreen>
               leading: const Icon(Icons.wifi),
               title: const Text("WiFi"),
               onTap: () {
-                Navigator.pop(context); // Cierra el Drawer
-                if (_isOpen)
-                  toggleMenu(); // Cierra el menú circular si está abierto
+                Navigator.pop(context);
+                if (_isOpen) toggleMenu();
 
-                // IMPORTANTE: Obtenemos el dispositivo desde el Singleton
                 final conectado = MiBluetoothService().dispositivoConectado;
 
                 if (conectado != null) {
@@ -174,7 +152,6 @@ class _MainScreenState extends State<MainScreen>
                     ),
                   );
                 } else {
-                  // Si no hay nada conectado, lo mandamos primero a la pantalla de Bluetooth
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
@@ -184,7 +161,9 @@ class _MainScreenState extends State<MainScreen>
                   );
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const BluetoothScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const BluetoothScreen(),
+                    ),
                   );
                 }
               },
@@ -198,7 +177,9 @@ class _MainScreenState extends State<MainScreen>
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const BluetoothScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const BluetoothScreen(),
+                  ),
                 );
               },
             ),
@@ -208,17 +189,14 @@ class _MainScreenState extends State<MainScreen>
 
       body: Stack(
         children: [
-          // 1) Pantalla activa
           _screens[_currentIndex],
 
-          // 2) Overlay oscuro — DEBAJO de los botones y etiquetas
           if (_isOpen)
             GestureDetector(
               onTap: toggleMenu,
               child: Container(color: Colors.black.withOpacity(0.55)),
             ),
 
-          // 3) Botones circulares — ENCIMA del overlay
           ..._arcItems.map((item) {
             final double rad = item.angle * pi / 180;
             final double dx = cos(rad) * radius;
@@ -235,7 +213,6 @@ class _MainScreenState extends State<MainScreen>
                   opacity: t.clamp(0.0, 1.0),
                   child: Stack(
                     children: [
-                      // Etiqueta ARRIBA del círculo
                       Positioned(
                         left: cx - 55,
                         top: cy - btnSize / 2 - 52,
@@ -264,7 +241,6 @@ class _MainScreenState extends State<MainScreen>
                         ),
                       ),
 
-                      // Botón circular con ícono
                       Positioned(
                         left: cx - btnSize / 2,
                         top: cy - btnSize / 2,
@@ -321,8 +297,6 @@ class _MainScreenState extends State<MainScreen>
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: _isOpen ? Colors.redAccent : activeColor,
-        shape: const CircleBorder(),
-        elevation: 6,
         onPressed: toggleMenu,
         child: AnimatedRotation(
           turns: _isOpen ? 0.125 : 0,
