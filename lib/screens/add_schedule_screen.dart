@@ -77,6 +77,29 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
       return;
     }
 
+    // LOGICA PARA EVITAR COLISIÓN DE HORARIOS
+    int horaFinal = _horaSeleccionada.hour;
+    int minutoFinal = _horaSeleccionada.minute;
+
+    //Obtenemos todos los horarios actuales (excepto el que estamos editando)
+
+    final todosLosHorarios = await db.getAllSchedules();
+    for (var s in todosLosHorarios) {
+      //Si estamos editando, no comparamos con sigomismo
+      if (widget.schedule != null && s.id == widget.schedule!.id) continue;
+
+      //Si la hora y el minuto coniciden con cualquier casillero guardado
+      if (s.horaProxima == horaFinal && s.minutoProxima == minutoFinal) {
+        minutoFinal += 1; //sumamos el minuto para que sea diferente
+
+        if (minutoFinal >= 60) {
+          minutoFinal = 0;
+          horaFinal = (horaFinal + 1) % 24;
+        }
+        print("COLISIÓN DETECTADA: Se ajustó el horario a $horaFinal:$minutoFinal para evitar conflictos.");
+      }
+    }
+
     int horas = int.tryParse(_intervaloController.text) ?? 8;
     int dias = int.tryParse(_diasController.text) ?? 1;
     int tomasTotales = (dias * 24) ~/ horas;
@@ -85,8 +108,9 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
       medicamento: Value(_nombreController.text),
       pacienteNombre: Value(_pacienteSeleccionado!),
       casillero: Value(_casilleroSeleccionado!),
-      horaProxima: Value(_horaSeleccionada.hour),
-      minutoProxima: Value(_horaSeleccionada.minute),
+      //usamos la variables ajustadas
+      horaProxima: Value(horaFinal),
+      minutoProxima: Value(minutoFinal),
       intervaloMinutos: Value(horas * 60),
       tomasRestantes: Value(tomasTotales),
       fechaCreacion: Value(DateTime.now()),
