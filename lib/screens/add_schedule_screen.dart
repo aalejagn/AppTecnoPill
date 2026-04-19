@@ -35,12 +35,14 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
       _nombreController.text = s.medicamento;
       _intervaloController.text = (s.intervaloMinutos ~/ 60).toString();
-      _diasController.text =
-          (s.tomasRestantes ~/ (s.intervaloMinutos ~/ 60)).toString();
+      _diasController.text = (s.tomasRestantes ~/ (s.intervaloMinutos ~/ 60))
+          .toString();
 
       _casilleroSeleccionado = s.casillero;
-      _horaSeleccionada =
-          TimeOfDay(hour: s.horaProxima, minute: s.minutoProxima);
+      _horaSeleccionada = TimeOfDay(
+        hour: s.horaProxima,
+        minute: s.minutoProxima,
+      );
 
       _pacienteSeleccionado = s.pacienteNombre;
     }
@@ -52,8 +54,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
     setState(() {
       _casillerosOcupados = registros
-          .where((s) =>
-              widget.schedule == null || s.id != widget.schedule!.id)
+          .where((s) => widget.schedule == null || s.id != widget.schedule!.id)
           .map((s) => s.casillero)
           .toList();
 
@@ -61,6 +62,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     });
   }
 
+  final WifiServicio _wifiServicio = WifiServicio();
   void _procesarGuardado() async {
     if (_pacienteSeleccionado == null ||
         _casilleroSeleccionado == null ||
@@ -70,10 +72,10 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     }
 
     final existe = await db.getScheduleByCasillero(_casilleroSeleccionado!);
-      if (existe != null && widget.schedule == null) {
-        _mostrarAlerta("Casillero ocupado", "Ya tiene un medicamento");
-        return;
-      }
+    if (existe != null && widget.schedule == null) {
+      _mostrarAlerta("Casillero ocupado", "Ya tiene un medicamento");
+      return;
+    }
 
     int horas = int.tryParse(_intervaloController.text) ?? 8;
     int dias = int.tryParse(_diasController.text) ?? 1;
@@ -91,17 +93,48 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
 
     try {
-      // 🔥 CREATE / UPDATE
+      int idFinal;
+
       if (widget.schedule == null) {
-        await db.insertSchedule(data);
+        idFinal = await db.insertSchedule(data);
       } else {
         await db.updateSchedule(widget.schedule!.id, data);
+        idFinal = widget.schedule!.id;
       }
 
-      if (mounted) Navigator.pop(context, true);
+      final scheduleParaEnviar = await db.getScheduleById(idFinal);
+
+      if (scheduleParaEnviar != null) {
+        _mostrarLoading();
+
+        bool exitoWifi = await _wifiServicio.enviarHorario(scheduleParaEnviar);
+
+        if (mounted) Navigator.pop(context); // Cierra el Loading
+
+        if (exitoWifi) {
+          if (mounted) Navigator.pop(context, true); // Regresa a la lista
+        } else {
+          _mostrarAlerta(
+            "Error de Sincronización",
+            "Guardado localmente. Pero no se pudo enviar al TecnoPill. Verifica tu WiFi.",
+          );
+        }
+      }
     } catch (e) {
-      _mostrarAlerta("Error", "$e");
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+      _mostrarAlerta("Error", "Ocurrió un problema: $e");
     }
+  } // <-- AQUÍ TERMINA _procesarGuardado
+
+  // Este método debe ir suelto en la clase
+  void _mostrarLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF7B61FF)),
+      ),
+    );
   }
 
   void _mostrarAlerta(String t, String m) {
@@ -115,7 +148,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           TextButton(
             child: Text("OK"),
             onPressed: () => Navigator.pop(context),
-          )
+          ),
         ],
       ),
     );
@@ -155,7 +188,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
               color: Colors.black12,
               blurRadius: 10,
               offset: Offset(0, 5),
-            )
+            ),
           ],
         ),
         child: const Center(
@@ -178,7 +211,9 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
     return Expanded(
       child: GestureDetector(
-        onTap: ocupado ? null : () => setState(() => _casilleroSeleccionado = num),
+        onTap: ocupado
+            ? null
+            : () => setState(() => _casilleroSeleccionado = num),
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),
           margin: EdgeInsets.all(6),
@@ -193,7 +228,12 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
               color: sel ? Colors.transparent : Colors.grey.shade300,
             ),
             boxShadow: sel
-                ? [BoxShadow(color: Colors.purple.withOpacity(0.3), blurRadius: 10)]
+                ? [
+                    BoxShadow(
+                      color: Colors.purple.withOpacity(0.3),
+                      blurRadius: 10,
+                    ),
+                  ]
                 : [],
           ),
           child: Column(
@@ -210,7 +250,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                   color: sel ? Colors.white : Colors.black,
                   fontWeight: FontWeight.w600,
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -232,7 +272,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
 
@@ -276,8 +315,10 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: ListTile(
-                leading: const Icon(Icons.access_time,
-                    color: Color(0xFF7B61FF)),
+                leading: const Icon(
+                  Icons.access_time,
+                  color: Color(0xFF7B61FF),
+                ),
                 title: const Text("Hora"),
                 subtitle: Text(
                   _horaSeleccionada.format(context),
@@ -309,13 +350,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: _campo(
-                    "Días",
-                    _diasController,
-                    number: true,
-                  ),
-                ),
+                Expanded(child: _campo("Días", _diasController, number: true)),
               ],
             ),
 

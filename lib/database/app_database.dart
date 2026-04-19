@@ -87,9 +87,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Schedule?> getScheduleByCasillero(int casillero) {
-    return (select(schedules)
-          ..where((t) => t.casillero.equals(casillero)))
-        .getSingleOrNull();
+    return (select(
+      schedules,
+    )..where((t) => t.casillero.equals(casillero))).getSingleOrNull();
+  }
+
+  Future<Schedule?> getScheduleById(int id) {
+    return (select(schedules)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 }
 

@@ -28,29 +28,58 @@ class WifiServicio {
     return resultado.length > 16 ? resultado.substring(0, 16) : resultado;
   }
 
-  // ✅ CORRECTO
+  //
   Future<bool> enviarHorario(Schedule s) async {
     final ip = ipTecnoPill;
 
+    String nombreMed = s.medicamento;
     String nombreParaMostrar = _abreviarNombre(
       s.pacienteNombre.isNotEmpty ? s.pacienteNombre : "Paciente",
     );
 
+    //Mapeamos el casillero
+    // Esto facilita la lógica en el ESP32 para manejar los servos
+    String casilleroId = (s.casillero == 1) ? "1" : "2";
+
+    // nombre: Medicamento
+    // paciente: Nombre abreviado
+    // c: Casillero (A o B)
+    // h: Hora de la toma
+    // m: Minuto de la toma
+    // int: Intervalo en minutos
+    // tot: Total de tomas a sonar
     final url = Uri.parse(
-      'http://$ip/enviarMed?nombre=${Uri.encodeComponent(s.medicamento)}&paciente=${Uri.encodeComponent(nombreParaMostrar)}',
+      'http://$ip/enviarMed?'
+      'nombre=${Uri.encodeComponent(nombreMed)}'
+      '&paciente=${Uri.encodeComponent(nombreParaMostrar)}'
+      '&c=$casilleroId'
+      '&h=${s.horaProxima}'
+      '&m=${s.minutoProxima}'
+      '&int=${s.intervaloMinutos}'
+      '&tot=${s.tomasRestantes}',
     );
 
     try {
-      print(">>> ENVIANDO A TECNOPILL: $url");
+      print("=========== DEBUG TECNOPILL ===========");
+      print("IP detectada: $ip");
+      print("Medicamento: $nombreMed");
+      print("Paciente: $nombreParaMostrar");
+      print("Casillero: $casilleroId");
+      print("Hora: ${s.horaProxima}:${s.minutoProxima}");
+      print("Intervalo: ${s.intervaloMinutos}");
+      print("Tomas restantes: ${s.tomasRestantes}");
+      print("URL FINAL: $url");
 
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          throw http.ClientException(
-            "Tiempo de espera agotado. Revisa la conexión con TecnoPill.",
+      final response = await http
+          .get(url)
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+              throw http.ClientException(
+                "Tiempo de espera agotado. Revisa la conexión con TecnoPill.",
+              );
+            },
           );
-        },
-      );
 
       print(">>> ESTADO ESP32: ${response.statusCode}");
       return response.statusCode == 200;
