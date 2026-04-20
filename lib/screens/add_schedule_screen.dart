@@ -343,7 +343,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                   Icons.access_time,
                   color: Color(0xFF7B61FF),
                 ),
-                title: const Text("Hora"),
+                title: const Text("Primera Toma"),
                 subtitle: Text(
                   _horaSeleccionada.format(context),
                   style: const TextStyle(fontWeight: FontWeight.bold),

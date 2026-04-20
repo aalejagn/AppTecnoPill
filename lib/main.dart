@@ -17,7 +17,7 @@ late AppDatabase database;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   database = AppDatabase();
-  runApp(MyApp());  
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF7B61FF)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7B61FF)),
         useMaterial3: true,
       ),
       home: SplashScreen(),
@@ -43,6 +43,7 @@ class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   bool _isOpen = false;
+
   late AnimationController _controller;
   late Animation<double> _expandAnim;
 
@@ -83,14 +84,17 @@ class _MainScreenState extends State<MainScreen>
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 380),
     );
+
+    // 🔥 BOUNCE SUAVE TIPO iOS
     _expandAnim = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutBack,
-      reverseCurve: Curves.easeIn,
+      reverseCurve: Curves.easeInCubic,
     );
   }
 
@@ -112,17 +116,20 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final fabCenterX = screenWidth / 2;
-    final fabCenterY =
-        MediaQuery.of(context).size.height - kBottomNavigationBarHeight - 80;
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
 
-    const double radius = 95;
+    final fabCenterX = size.width / 2;
+
+    // 🔥 FIX correcto
+    final fabCenterY = size.height - padding.bottom - 90;
+
+    final double radius = size.width * 0.23;
     const double btnSize = 64;
 
     return Scaffold(
       extendBody: true,
-      
+
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -134,7 +141,6 @@ class _MainScreenState extends State<MainScreen>
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ),
-
             ListTile(
               leading: const Icon(Icons.wifi),
               title: const Text("WiFi"),
@@ -142,7 +148,8 @@ class _MainScreenState extends State<MainScreen>
                 Navigator.pop(context);
                 if (_isOpen) toggleMenu();
 
-                final conectado = MiBluetoothService().dispositivoConectado;
+                final conectado =
+                    MiBluetoothService().dispositivoConectado;
 
                 if (conectado != null) {
                   Navigator.push(
@@ -154,9 +161,7 @@ class _MainScreenState extends State<MainScreen>
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Primero conecta tu TecnoPill por Bluetooth",
-                      ),
+                      content: Text("Conecta Bluetooth primero"),
                     ),
                   );
                   Navigator.push(
@@ -198,16 +203,17 @@ class _MainScreenState extends State<MainScreen>
             ),
 
           ..._arcItems.map((item) {
-            final double rad = item.angle * pi / 180;
-            final double dx = cos(rad) * radius;
-            final double dy = sin(rad) * radius;
+            final rad = item.angle * pi / 180;
+            final dx = cos(rad) * radius;
+            final dy = sin(rad) * radius;
 
             return AnimatedBuilder(
               animation: _expandAnim,
               builder: (context, _) {
                 final t = _expandAnim.value;
-                final double cx = fabCenterX + dx * t;
-                final double cy = fabCenterY + dy * t;
+
+                final cx = fabCenterX + dx * t;
+                final cy = fabCenterY + dy * t;
 
                 return Opacity(
                   opacity: t.clamp(0.0, 1.0),
@@ -216,26 +222,23 @@ class _MainScreenState extends State<MainScreen>
                       Positioned(
                         left: cx - 55,
                         top: cy - btnSize / 2 - 52,
-                        child: GestureDetector(
-                          onTap: item.onTap,
-                          child: SizedBox(
-                            width: 110,
-                            child: Text(
-                              item.label,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                height: 1.3,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black,
-                                    blurRadius: 6,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
-                              ),
+                        child: SizedBox(
+                          width: 110,
+                          child: Text(
+                            item.label,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              height: 1.3,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black,
+                                  blurRadius: 6,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -250,13 +253,13 @@ class _MainScreenState extends State<MainScreen>
                             width: btnSize,
                             height: btnSize,
                             decoration: BoxDecoration(
-                              color: activeColor.withOpacity(0.90),
+                              color: activeColor.withOpacity(0.95),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: activeColor.withOpacity(0.4),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                                  color: activeColor.withOpacity(0.35),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
@@ -296,6 +299,7 @@ class _MainScreenState extends State<MainScreen>
       ),
 
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(), // 🔥 IMPORTANTE
         backgroundColor: _isOpen ? Colors.redAccent : activeColor,
         onPressed: toggleMenu,
         child: AnimatedRotation(
@@ -308,20 +312,23 @@ class _MainScreenState extends State<MainScreen>
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isActive = _currentIndex == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _currentIndex = index),
-        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isActive ? activeColor : inactiveColor, size: 22),
+            Icon(icon,
+                color: isActive ? activeColor : inactiveColor, size: 22),
             const SizedBox(height: 2),
             Text(
               label,

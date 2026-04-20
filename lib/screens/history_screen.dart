@@ -45,6 +45,74 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  Widget _emptySelectPatient() {
+    return const Expanded(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person_search,
+              size: 90,
+              color: Color(0xFF7B61FF),
+            ),
+            SizedBox(height: 12),
+            Text(
+              "Selecciona un paciente",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              "Elige uno arriba para ver su historial",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyHistory() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.inbox,
+            size: 80,
+            color: Colors.grey,
+          ),
+          SizedBox(height: 10),
+          Text(
+            "Sin registros aún",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            "Este paciente aún no tiene historial",
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +122,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
         elevation: 0,
         backgroundColor: const Color(0xFF7B61FF),
         foregroundColor: Colors.white,
-        title: const Text(""),
+        title: const Text(
+          "Historial de Tomas",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+
+        ),
       ),
 
       body: Padding(
@@ -77,11 +152,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
                         blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4),
                       )
                     ],
                   ),
@@ -109,27 +184,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
             const SizedBox(height: 20),
 
-            // 📭 VACÍO
+            // 📭 EMPTY STATE O CONTENIDO
             if (_pacienteSeleccionado == null)
-              const Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.person_search,
-                          size: 80, color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text(
-                        "Selecciona un paciente",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+              _emptySelectPatient()
             else
               Expanded(
                 child: StreamBuilder<List<Schedule>>(
@@ -137,28 +194,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(
-                          child: CircularProgressIndicator());
+                        child: CircularProgressIndicator(),
+                      );
                     }
 
                     final data = snapshot.data!;
 
                     if (data.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "Sin registros aún",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      );
+                      return _emptyHistory();
                     }
 
-                    // 🧠 RESUMEN CALCULADO
+                    // 🧠 RESUMEN
                     int totalTomas = 0;
 
                     for (final s in data) {
                       totalTomas += s.tomasRestantes;
                     }
 
-                    final tomadas = (totalTomas * 0.9).round(); // simulación
+                    final tomadas = (totalTomas * 0.9).round();
                     final omitidas = totalTomas - tomadas;
                     final cumplimiento = totalTomas == 0
                         ? 0
@@ -171,14 +224,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
                               colors: [
                                 Color(0xFF7B61FF),
                                 Color(0xFFB39DFF)
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(18),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,19 +278,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               final s = data[index];
 
                               return Container(
-                                margin:
-                                    const EdgeInsets.only(bottom: 12),
+                                margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius:
-                                      BorderRadius.circular(18),
-                                  boxShadow: [
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: const [
                                     BoxShadow(
-                                      color: const Color(0xFF7B61FF)
-                                          .withOpacity(0.08),
+                                      color: Color(0x117B61FF),
                                       blurRadius: 12,
-                                      offset: const Offset(0, 4),
+                                      offset: Offset(0, 4),
                                     )
                                   ],
                                 ),
@@ -263,14 +315,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           Text(
                                             s.medicamento,
                                             style: const TextStyle(
-                                              fontWeight:
-                                                  FontWeight.bold,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
+                                          Text("Casillero ${s.casillero}"),
                                           Text(
-                                              "Casillero ${s.casillero}"),
-                                          Text(
-                                              "Intervalo ${s.intervaloMinutos ~/ 60}h"),
+                                            "Intervalo ${s.intervaloMinutos ~/ 60}h",
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -282,14 +333,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         const Text(
                                           "Inicio",
                                           style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey),
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                         Text(
                                           "${s.horaProxima.toString().padLeft(2, '0')}:${s.minutoProxima.toString().padLeft(2, '0')}",
                                           style: const TextStyle(
-                                            fontWeight:
-                                                FontWeight.bold,
+                                            fontWeight: FontWeight.bold,
                                             color: Color(0xFF7B61FF),
                                           ),
                                         ),

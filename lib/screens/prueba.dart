@@ -589,36 +589,40 @@ class HomeScreen extends StatelessWidget {
 
           const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-          SliverToBoxAdapter(
-            child: StreamBuilder<List<Schedule>>(
-              stream: _escucharHorarios(),
-              builder: (context, snapshot) {
+          StreamBuilder<List<Schedule>>(
+            stream: _escucharHorarios(),
+            builder: (context, snapshot) {
 
-                // 🔄 LOADING
-                if (!snapshot.hasData) {
-                  return const Padding(
+              // 🔄 LOADING
+              if (!snapshot.hasData) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+                  ),
+                );
+              }
 
-                final horarios = snapshot.data!;
+              final horarios = snapshot.data!;
 
-                // 🚫 VACÍO
-                if (horarios.isEmpty) {
-                  return const Padding(
+              // 🚫 VACÍO
+              if (horarios.isEmpty) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(
                       child: Text("No hay medicamentos activos"),
                     ),
-                  );
-                }
+                  ),
+                );
+              }
 
-                // ✅ LISTA NORMAL
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: List.generate(horarios.length, (index) {
+              // ✅ LISTA NORMAL
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
                       final s = horarios[index];
                       final horaToma = _calcularProximaHora(s);
 
@@ -706,11 +710,12 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       );
-                    }),
+                    },
+                    childCount: horarios.length,
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),

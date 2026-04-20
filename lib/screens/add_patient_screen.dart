@@ -116,9 +116,11 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7B61FF),
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF7B61FF), // texto
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFF7B61FF)), // borde opcional
                       ),
                     ),
                     onPressed: () {
