@@ -96,7 +96,9 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           minutoFinal = 0;
           horaFinal = (horaFinal + 1) % 24;
         }
-        print("COLISIÓN DETECTADA: Se ajustó el horario a $horaFinal:$minutoFinal para evitar conflictos.");
+        print(
+          "COLISIÓN DETECTADA: Se ajustó el horario a $horaFinal:$minutoFinal para evitar conflictos.",
+        );
       }
     }
 
@@ -156,7 +158,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF7B61FF)),
+        child: CircularProgressIndicator(color: Color(0xFF3D7DC8)),
       ),
     );
   }
@@ -205,7 +207,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
-            colors: [Color(0xFF7B61FF), Color(0xFF9C6BFF)],
+            colors: [Color(0xFF3D7DC8), Color(0xFF5B8ED4)],
           ),
           boxShadow: [
             BoxShadow(
@@ -245,7 +247,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: sel
-                ? LinearGradient(colors: [Color(0xFF7B61FF), Color(0xFFB39DFF)])
+                ? LinearGradient(colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)])
                 : null,
             color: ocupado ? Colors.grey.shade300 : Colors.white,
             border: Border.all(
@@ -254,7 +256,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             boxShadow: sel
                 ? [
                     BoxShadow(
-                      color: Colors.purple.withOpacity(0.3),
+                      color: const Color(0xFF3D7DC8).withOpacity(0.3),
                       blurRadius: 10,
                     ),
                   ]
@@ -285,10 +287,10 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF6F6FB),
+      backgroundColor: Color(0xFFF0F2F5),
       appBar: AppBar(
         title: Text("Configurar TecnoPill"),
-        backgroundColor: Color(0xFF7B61FF),
+        backgroundColor: Color(0xFF3D7DC8),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -341,7 +343,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
               child: ListTile(
                 leading: const Icon(
                   Icons.access_time,
-                  color: Color(0xFF7B61FF),
+                  color: Color(0xFF3D7DC8),
                 ),
                 title: const Text("Primera Toma"),
                 subtitle: Text(
