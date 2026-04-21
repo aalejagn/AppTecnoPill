@@ -10,7 +10,6 @@ class PacientesScreen extends StatefulWidget {
 }
 
 class _PacientesScreenState extends State<PacientesScreen> {
-
   Future<List<Patient>> _getPacientes() {
     return db.getAllPatients();
   }
@@ -46,7 +45,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
           child: Wrap(
             children: [
               ListTile(
-                leading: const Icon(Icons.edit, color: Color(0xFF7B61FF)),
+                leading: const Icon(Icons.edit, color: Color(0xFF3D7DC8)),
                 title: const Text("Editar"),
                 onTap: () {
                   Navigator.pop(context);
@@ -76,15 +75,15 @@ class _PacientesScreenState extends State<PacientesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FB),
+      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
         title: const Text("Pacientes"),
-        backgroundColor: const Color(0xFF7B61FF),
+        backgroundColor: const Color(0xFF3D7DC8),
         foregroundColor: Colors.white,
       ),
 
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF7B61FF),
+        backgroundColor: const Color(0xFF3D7DC8),
         child: const Icon(Icons.add),
         onPressed: () {
           Navigator.push(
@@ -104,9 +103,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
           final pacientes = snapshot.data!;
 
           if (pacientes.isEmpty) {
-            return const Center(
-              child: Text("No hay pacientes registrados"),
-            );
+            return const Center(child: Text("No hay pacientes registrados"));
           }
 
           return ListView.builder(
@@ -125,10 +122,10 @@ class _PacientesScreenState extends State<PacientesScreen> {
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF7B61FF).withOpacity(0.08),
+                        color: const Color(0xFF3D7DC8).withOpacity(0.08),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: Row(
@@ -139,10 +136,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
                         height: 45,
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF7B61FF),
-                              Color(0xFFB19CFF),
-                            ],
+                            colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)],
                           ),
                           shape: BoxShape.circle,
                         ),
@@ -176,18 +170,13 @@ class _PacientesScreenState extends State<PacientesScreen> {
                             const SizedBox(height: 4),
                             Text(
                               "${calcularEdad(p.fechaNacimiento)} años",
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                              ),
+                              style: TextStyle(color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       ),
 
-                      const Icon(
-                        Icons.more_vert,
-                        color: Colors.grey,
-                      )
+                      const Icon(Icons.more_vert, color: Colors.grey),
                     ],
                   ),
                 ),
