@@ -1,4 +1,4 @@
-import 'dart:async'; // ← agrega este import
+import 'dart:async'; //
 import 'package:flutter/material.dart';
 import 'package:flutter_aplicacion1/main.dart';
 
