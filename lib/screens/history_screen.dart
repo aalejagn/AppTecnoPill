@@ -18,9 +18,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Stream<List<Schedule>> _getHistorial(String paciente) {
-    return (db.select(db.schedules)
-          ..where((s) => s.pacienteNombre.equals(paciente)))
-        .watch();
+    return (db.select(
+      db.schedules,
+    )..where((s) => s.pacienteNombre.equals(paciente))).watch();
   }
 
   Widget _stat(String title, String value) {
@@ -36,10 +36,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
@@ -51,11 +48,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.person_search,
-              size: 90,
-              color: Color(0xFF7B61FF),
-            ),
+            Icon(Icons.person_search, size: 90, color: Color(0xFF3D7DC8)),
             SizedBox(height: 12),
             Text(
               "Selecciona un paciente",
@@ -68,10 +61,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             SizedBox(height: 6),
             Text(
               "Elige uno arriba para ver su historial",
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ],
@@ -85,11 +75,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inbox,
-            size: 80,
-            color: Colors.grey,
-          ),
+          Icon(Icons.inbox, size: 80, color: Colors.grey),
           SizedBox(height: 10),
           Text(
             "Sin registros aún",
@@ -102,10 +88,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           SizedBox(height: 6),
           Text(
             "Este paciente aún no tiene historial",
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey),
             textAlign: TextAlign.center,
           ),
         ],
@@ -116,19 +99,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FB),
+      backgroundColor: const Color(0xFFF0F2F5),
 
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFF7B61FF),
+        backgroundColor: const Color(0xFF3D7DC8),
         foregroundColor: Colors.white,
         title: const Text(
           "Historial de Tomas",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
       ),
 
@@ -136,7 +115,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
             // 🌟 SELECTOR
             FutureBuilder<List<Patient>>(
               future: _getPacientes(),
@@ -157,7 +135,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         color: Colors.black12,
                         blurRadius: 10,
                         offset: Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: DropdownButtonHideUnderline(
@@ -166,8 +144,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       hint: const Text("Selecciona un paciente"),
                       value: _pacienteSeleccionado,
                       items: pacientes.map((p) {
-                        final nombre =
-                            "${p.nombre} ${p.apellidoPaterno}";
+                        final nombre = "${p.nombre} ${p.apellidoPaterno}";
                         return DropdownMenuItem(
                           value: nombre,
                           child: Text(nombre),
@@ -193,9 +170,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   stream: _getHistorial(_pacienteSeleccionado!),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     final data = snapshot.data!;
@@ -219,21 +194,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
                     return Column(
                       children: [
-
                         // 🔥 RESUMEN
                         Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(16),
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                Color(0xFF7B61FF),
-                                Color(0xFFB39DFF)
-                              ],
+                              colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)],
                             ),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(18),
-                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(18)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,10 +254,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   boxShadow: const [
                                     BoxShadow(
-                                      color: Color(0x117B61FF),
+                                      color: Color(0x113D7DC8),
                                       blurRadius: 12,
                                       offset: Offset(0, 4),
-                                    )
+                                    ),
                                   ],
                                 ),
                                 child: Row(
@@ -298,7 +267,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                       height: 45,
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Color(0xFF7B61FF),
+                                        color: Color(0xFF3D7DC8),
                                       ),
                                       child: const Icon(
                                         Icons.medication,
@@ -341,11 +310,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           "${s.horaProxima.toString().padLeft(2, '0')}:${s.minutoProxima.toString().padLeft(2, '0')}",
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF7B61FF),
+                                            color: Color(0xFF3D7DC8),
                                           ),
                                         ),
                                       ],
-                                    )
+                                    ),
                                   ],
                                 ),
                               );
