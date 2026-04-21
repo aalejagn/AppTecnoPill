@@ -26,9 +26,7 @@ class HomeScreen extends StatelessWidget {
     );
 
     while (proxima.isBefore(ahora)) {
-      proxima = proxima.add(
-        Duration(minutes: s.intervaloMinutos),
-      );
+      proxima = proxima.add(Duration(minutes: s.intervaloMinutos));
     }
 
     return DateFormat.jm().format(proxima);
@@ -37,7 +35,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: const Color(0xFFF0F2F5),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -45,10 +43,7 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.all(22),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF7B61FF),
-                    Color(0xFFB19CFF),
-                  ],
+                  colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -62,7 +57,6 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // 🔥 TITULO + BOTÓN OPCIONES
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,7 +71,10 @@ class HomeScreen extends StatelessWidget {
                         ),
 
                         IconButton(
-                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: Colors.white,
+                          ),
                           onPressed: () {
                             showModalBottomSheet(
                               context: context,
@@ -92,26 +89,28 @@ class HomeScreen extends StatelessWidget {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-
                                       ListTile(
                                         leading: const Icon(Icons.wifi),
                                         title: const Text("WiFi"),
                                         onTap: () {
                                           Navigator.pop(context);
 
-                                          final conectado =
-                                              MiBluetoothService().dispositivoConectado;
+                                          final conectado = MiBluetoothService()
+                                              .dispositivoConectado;
 
                                           if (conectado != null) {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (_) =>
-                                                    WifiScreen(device: conectado),
+                                                builder: (_) => WifiScreen(
+                                                  device: conectado,
+                                                ),
                                               ),
                                             );
                                           } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               const SnackBar(
                                                 content: Text(
                                                   "Primero conecta el dispositivo por Bluetooth",
@@ -159,10 +158,7 @@ class HomeScreen extends StatelessWidget {
 
                     const Text(
                       "Control inteligente de medicamentos",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
 
                     const SizedBox(height: 18),
@@ -180,8 +176,10 @@ class HomeScreen extends StatelessWidget {
 
                             final totalHorarios = schedules.length;
                             final totalPacientes = patients.length;
-                            final activos =
-                                schedules.map((e) => e.medicamento).toSet().length;
+                            final activos = schedules
+                                .map((e) => e.medicamento)
+                                .toSet()
+                                .length;
 
                             final hoy = DateTime.now();
                             int tomasHoy = 0;
@@ -215,19 +213,35 @@ class HomeScreen extends StatelessWidget {
                               child: Column(
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
                                     children: [
-                                      _miniInfo(Icons.medication, "Activos", "$activos"),
-                                      _miniInfo(Icons.people, "Pacientes", "$totalPacientes"),
-                                      _miniInfo(Icons.schedule, "Horarios", "$totalHorarios"),
+                                      _miniInfo(
+                                        Icons.medication,
+                                        "Activos",
+                                        "$activos",
+                                      ),
+                                      _miniInfo(
+                                        Icons.people,
+                                        "Pacientes",
+                                        "$totalPacientes",
+                                      ),
+                                      _miniInfo(
+                                        Icons.schedule,
+                                        "Horarios",
+                                        "$totalHorarios",
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.today,
-                                          color: Colors.white, size: 18),
+                                      const Icon(
+                                        Icons.today,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         "Tomas hoy: $tomasHoy",
@@ -235,9 +249,9 @@ class HomeScreen extends StatelessWidget {
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
                                         ),
-                                      )
+                                      ),
                                     ],
-                                  )
+                                  ),
                                 ],
                               ),
                             );
@@ -273,17 +287,14 @@ class HomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF7B61FF),
-                            Color(0xFFB19CFF),
-                          ],
+                          colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(22),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF7B61FF).withOpacity(0.25),
+                            color: const Color(0xFF3D7DC8).withOpacity(0.25),
                             blurRadius: 15,
                             offset: const Offset(0, 6),
                           ),
@@ -364,7 +375,8 @@ class HomeScreen extends StatelessWidget {
                 }
               }
 
-              if (proxima == null) return const SliverToBoxAdapter(child: SizedBox());
+              if (proxima == null)
+                return const SliverToBoxAdapter(child: SizedBox());
 
               final horaFormateada = DateFormat.jm().format(mejorTiempo!);
 
@@ -375,17 +387,14 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF7B61FF),
-                          Color(0xFFB19CFF),
-                        ],
+                        colors: [Color(0xFF3D7DC8), Color(0xFF4A6FA5)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B61FF).withOpacity(0.25),
+                          color: const Color(0xFF3D7DC8).withOpacity(0.25),
                           blurRadius: 15,
                           offset: const Offset(0, 6),
                         ),
@@ -402,10 +411,7 @@ class HomeScreen extends StatelessWidget {
                             color: Colors.white.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.alarm,
-                            color: Colors.white,
-                          ),
+                          child: const Icon(Icons.alarm, color: Colors.white),
                         ),
 
                         const SizedBox(width: 14),
@@ -452,17 +458,17 @@ class HomeScreen extends StatelessWidget {
 
                         const SizedBox(width: 12),
 
-                          // 🖼️ IMAGEN DERECHA
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: SizedBox(
-                              width: 100,
-                              child: Image.asset(
-                                'assets/modelo.png',
-                                fit: BoxFit.cover,
-                              ),
+                        // 🖼️ IMAGEN DERECHA
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: SizedBox(
+                            width: 100,
+                            child: Image.asset(
+                              'assets/modelo.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -470,16 +476,13 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
-          
+
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Text(
                 "Horarios Programados",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -503,17 +506,14 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF7B61FF),
-                              Color(0xFF9F8CFF),
-                            ],
+                            colors: [Color(0xFF3D7DC8), Color(0xFF5B8ED4)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF7B61FF).withOpacity(0.3),
+                              color: const Color(0xFF3D7DC8).withOpacity(0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -551,15 +551,12 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF6A5AE0),
-                              Color(0xFFB19CFF),
-                            ],
+                            colors: [Color(0xFF2D6AB0), Color(0xFF4A6FA5)],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF7B61FF).withOpacity(0.25),
+                              color: const Color(0xFF3D7DC8).withOpacity(0.25),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -593,7 +590,6 @@ class HomeScreen extends StatelessWidget {
             child: StreamBuilder<List<Schedule>>(
               stream: _escucharHorarios(),
               builder: (context, snapshot) {
-
                 // 🔄 LOADING
                 if (!snapshot.hasData) {
                   return const Padding(
@@ -608,9 +604,7 @@ class HomeScreen extends StatelessWidget {
                 if (horarios.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(20),
-                    child: Center(
-                      child: Text("No hay medicamentos activos"),
-                    ),
+                    child: Center(child: Text("No hay medicamentos activos")),
                   );
                 }
 
@@ -630,7 +624,7 @@ class HomeScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF7B61FF).withOpacity(0.08),
+                              color: const Color(0xFF3D7DC8).withOpacity(0.08),
                               blurRadius: 15,
                               offset: const Offset(0, 4),
                             ),
@@ -642,12 +636,12 @@ class HomeScreen extends StatelessWidget {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF7B61FF).withOpacity(0.1),
+                                color: const Color(0xFF3D7DC8).withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
                                 Icons.medication_liquid,
-                                color: Color(0xFF7B61FF),
+                                color: Color(0xFF3D7DC8),
                               ),
                             ),
                             const SizedBox(width: 15),
@@ -667,7 +661,7 @@ class HomeScreen extends StatelessWidget {
                                   Text(
                                     "Paciente: ${s.pacienteNombre}",
                                     style: const TextStyle(
-                                      color: Color(0xFF7B61FF),
+                                      color: Color(0xFF3D7DC8),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
                                     ),
@@ -698,7 +692,7 @@ class HomeScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF7B61FF),
+                                    color: Color(0xFF3D7DC8),
                                   ),
                                 ),
                               ],
@@ -731,10 +725,7 @@ class HomeScreen extends StatelessWidget {
         ),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
