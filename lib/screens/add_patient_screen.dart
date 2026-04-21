@@ -80,24 +80,17 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                   width: 70,
                   height: 70,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF7B61FF),
+                    color: Color(0xFF3D7DC8),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 40,
-                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 40),
                 ),
 
                 const SizedBox(height: 16),
 
                 const Text(
                   "¡Guardado!",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 8),
@@ -105,9 +98,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 Text(
                   "Paciente guardado correctamente.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(color: Colors.grey[600]),
                 ),
 
                 const SizedBox(height: 20),
@@ -117,10 +108,12 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF7B61FF), // texto
+                      foregroundColor: const Color(0xFF3D7DC8), // texto
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFF7B61FF)), // borde opcional
+                        side: const BorderSide(
+                          color: Color(0xFF3D7DC8),
+                        ), // borde opcional
                       ),
                     ),
                     onPressed: () {
@@ -136,9 +129,9 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al guardar")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error al guardar")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -149,11 +142,11 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
     final esEdicion = widget.patient != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FB),
+      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
         title: Text(esEdicion ? "Editar Paciente" : "Nuevo Paciente"),
         centerTitle: true,
-        backgroundColor: const Color(0xFF7B61FF),
+        backgroundColor: const Color(0xFF3D7DC8),
         foregroundColor: Colors.white,
       ),
       body: SafeArea(
@@ -173,8 +166,12 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                       _input("Nombre", _nombreController, Icons.person),
                       _input("Apellido Paterno", _paternoController, null),
                       _input("Apellido Materno", _maternoController, null),
-                      _input("Teléfono", _telefonoController, Icons.phone,
-                          isPhone: true),
+                      _input(
+                        "Teléfono",
+                        _telefonoController,
+                        Icons.phone,
+                        isPhone: true,
+                      ),
 
                       const SizedBox(height: 10),
 
@@ -212,7 +209,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7B61FF),
+                    backgroundColor: const Color(0xFF3D7DC8),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -247,8 +244,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: c,
-        keyboardType:
-            isPhone ? TextInputType.phone : TextInputType.text,
+        keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: icon != null ? Icon(icon) : null,
