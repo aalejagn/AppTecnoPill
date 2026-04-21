@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7B61FF)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3D7DC8)),
         useMaterial3: true,
       ),
       home: SplashScreen(),
@@ -111,7 +111,7 @@ class _MainScreenState extends State<MainScreen>
     });
   }
 
-  Color get activeColor => const Color(0xFF7B61FF);
+  Color get activeColor => const Color(0xFF3D7DC8);
   Color get inactiveColor => Colors.grey;
 
   @override
@@ -135,7 +135,7 @@ class _MainScreenState extends State<MainScreen>
           padding: EdgeInsets.zero,
           children: [
             const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF7B61FF)),
+              decoration: BoxDecoration(color: Color(0xFF3D7DC8)),
               child: Text(
                 "Menú",
                 style: TextStyle(color: Colors.white, fontSize: 20),
@@ -148,8 +148,7 @@ class _MainScreenState extends State<MainScreen>
                 Navigator.pop(context);
                 if (_isOpen) toggleMenu();
 
-                final conectado =
-                    MiBluetoothService().dispositivoConectado;
+                final conectado = MiBluetoothService().dispositivoConectado;
 
                 if (conectado != null) {
                   Navigator.push(
@@ -160,15 +159,11 @@ class _MainScreenState extends State<MainScreen>
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Conecta Bluetooth primero"),
-                    ),
+                    const SnackBar(content: Text("Conecta Bluetooth primero")),
                   );
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const BluetoothScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const BluetoothScreen()),
                   );
                 }
               },
@@ -182,9 +177,7 @@ class _MainScreenState extends State<MainScreen>
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const BluetoothScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const BluetoothScreen()),
                 );
               },
             ),
@@ -313,8 +306,7 @@ class _MainScreenState extends State<MainScreen>
         ),
       ),
 
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -327,8 +319,7 @@ class _MainScreenState extends State<MainScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                color: isActive ? activeColor : inactiveColor, size: 22),
+            Icon(icon, color: isActive ? activeColor : inactiveColor, size: 22),
             const SizedBox(height: 2),
             Text(
               label,
