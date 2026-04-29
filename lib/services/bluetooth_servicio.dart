@@ -18,25 +18,23 @@ class MiBluetoothService {
   BluetoothCharacteristic? _caracteristica;
   List<String> redesWifi = [];
 
+  /// Última respuesta de conexión WiFi recibida del ESP32.
+  /// Valores posibles: "WIFI_OK", "WIFI_FAIL", o null si aún no hay respuesta.
+  String? ultimaRespuestaWifi;
+
   // ip
   String? ipActualESP32;
-  // MiBluetoothService
   String? nombreRedActual;
 
-  /// Inicia el escaneo de dispositivos cercanos de forma segura.
-  /// El sistema verifica primero si el adaptador está encendido para evitar cierres inesperados.
   void startScan() async {
     try {
-      // 1. El sistema obtiene el estado actual del Bluetooth.
       BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
 
-      // 2. Si el Bluetooth está apagado, el sistema detiene el proceso para prevenir errores.
       if (state != BluetoothAdapterState.on) {
         print("[BLE] El escaneo no puede iniciar: Bluetooth apagado.");
         return;
       }
 
-      // 3. El sistema verifica si ya hay un escaneo activo para no duplicar procesos.
       if (FlutterBluePlus.isScanningNow) {
         print("[BLE] Ya se encuentra realizando un escaneo.");
         return;
@@ -44,11 +42,9 @@ class MiBluetoothService {
 
       print("[BLE] Iniciando escaneo de 15 segundos...");
 
-      // 4. Ejecución del escaneo con manejo de excepciones.
       await FlutterBluePlus.startScan(
         timeout: const Duration(seconds: 15),
-        androidUsesFineLocation:
-            true, // Importante para la precisión en Android.
+        androidUsesFineLocation: true,
       );
 
       FlutterBluePlus.scanResults.listen((resultados) {
@@ -59,7 +55,6 @@ class MiBluetoothService {
         }
       });
     } catch (e) {
-      // El sistema captura cualquier error técnico para evitar que la app colapse.
       print("[BLE] Error crítico durante el escaneo: $e");
     }
   }
@@ -77,7 +72,6 @@ class MiBluetoothService {
   }
 
   Future<void> prepararEscucha(BluetoothDevice dispositivo) async {
-    //Si ya tenemos la caracteristica lista no repetir
     if (_caracteristica != null) {
       print("[BLE] ya estaba suscrito skip");
       return;
@@ -103,21 +97,23 @@ class MiBluetoothService {
             String rawRespuesta = String.fromCharCodes(value);
             print("[BLE] Recibido: $rawRespuesta");
 
-            // Conseguir la ip
             if (rawRespuesta.startsWith("IP|")) {
               ipActualESP32 = rawRespuesta.split('|')[1].trim();
               print("¡IP capturada con éxito!: $ipActualESP32");
               return;
             }
 
-            // ----------------
-            // ← esto es todo lo que falta
             if (rawRespuesta == "SCAN" ||
-                rawRespuesta == "WIFI_OK" ||
-                rawRespuesta == "WIFI_FAIL" ||
                 rawRespuesta == "ABRIENDO" ||
                 rawRespuesta.startsWith("WIFI_CONNECT"))
               return;
+
+            // Capturamos el resultado real de la conexión WiFi
+            if (rawRespuesta == "WIFI_OK" || rawRespuesta == "WIFI_FAIL") {
+              ultimaRespuestaWifi = rawRespuesta;
+              print("[BLE] Resultado WiFi: $ultimaRespuestaWifi");
+              return;
+            }
 
             redesWifi = rawRespuesta.trim().split(',');
             print("Redes Encontradas: $redesWifi");
@@ -160,11 +156,25 @@ class MiBluetoothService {
     }
   }
 
-  // detecte desconexión
   void limpiarConexion() {
     dispositivoConectado = null;
     _caracteristica = null;
     redesWifi = [];
     print("[BLE] Estado limpiado.");
+  }
+
+  /// Desconecta el dispositivo BLE y limpia el estado interno.
+  /// Útil cuando el ESP32 se reinicia y la app queda en estado fantasma.
+  Future<void> desconectar() async {
+    try {
+      if (dispositivoConectado != null) {
+        await dispositivoConectado!.disconnect();
+        print("[BLE] Dispositivo desconectado correctamente.");
+      }
+    } catch (e) {
+      print("[BLE] Error al desconectar (puede que ya estuviera caído): $e");
+    } finally {
+      limpiarConexion();
+    }
   }
 }

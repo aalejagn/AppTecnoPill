@@ -243,6 +243,25 @@ class _WifiScreenState extends State<WifiScreen> {
     );
   }
 
+  /// Espera la respuesta real del ESP32 por BLE.
+  /// Devuelve true si llegó WIFI_OK, false si llegó WIFI_FAIL o se agotó el tiempo.
+  Future<bool> _esperarRespuestaWifi() async {
+    // Limpiamos cualquier respuesta vieja antes de esperar
+    _bleService.ultimaRespuestaWifi = null;
+
+    const maxEspera = Duration(seconds: 12);
+    const intervalo = Duration(milliseconds: 300);
+    final limite = DateTime.now().add(maxEspera);
+
+    while (DateTime.now().isBefore(limite)) {
+      await Future.delayed(intervalo);
+      final resp = _bleService.ultimaRespuestaWifi;
+      if (resp == "WIFI_OK") return true;
+      if (resp == "WIFI_FAIL") return false;
+    }
+    return false; // Timeout = fallo
+  }
+
   // --- Diálogo de conexión con StatefulBuilder y lógica limpia ---
   void _mostrarDialogoConexion(String nombreRed) {
     final TextEditingController passwordController = TextEditingController();
@@ -255,7 +274,6 @@ class _WifiScreenState extends State<WifiScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setLocalState) {
-            // Cambié el nombre a setLocalState para no confundir
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -287,7 +305,7 @@ class _WifiScreenState extends State<WifiScreen> {
                     const SizedBox(height: 20),
                     const CircularProgressIndicator(),
                     const SizedBox(height: 10),
-                    const Text("Enviando credenciales..."),
+                    const Text("Esperando respuesta del TecnoPill..."),
                   ],
                 ],
               ),
@@ -306,25 +324,28 @@ class _WifiScreenState extends State<WifiScreen> {
                       : () async {
                           setLocalState(() => isLoading = true);
 
-                          // Enviamos los datos al servicio
+                          // Enviamos las credenciales al ESP32
                           _enviarCredenciales(
                             nombreRed,
                             passwordController.text,
                           );
 
-                          // Simulación de espera de respuesta
-                          await Future.delayed(const Duration(seconds: 2));
-                          // --- ESTA ES LA PARTE CLAVE ---
-                          setState(() {
-                            _redConectadaActual =
-                                nombreRed; // Marcamos esta red como la activa
-                            _bleService.nombreRedActual =
-                                nombreRed; // Lo guardamos en el servicio
-                          });
-                          // ------------------------------
-                          if (mounted) {
-                            Navigator.pop(context); // Cierra diálogo de input
-                            _mostrarExito(nombreRed); // Muestra éxito
+                          // Esperamos la respuesta REAL del ESP32
+                          final exito = await _esperarRespuestaWifi();
+
+                          if (!mounted) return;
+                          Navigator.pop(context);
+
+                          if (exito) {
+                            // Solo marcamos conectado si el ESP32 confirmó
+                            setState(() {
+                              _redConectadaActual = nombreRed;
+                              _bleService.nombreRedActual = nombreRed;
+                            });
+                            _mostrarExito(nombreRed);
+                          } else {
+                            // Contraseña incorrecta o timeout
+                            _mostrarError(nombreRed);
                           }
                         },
                   child: const Text("Conectar"),
@@ -334,6 +355,64 @@ class _WifiScreenState extends State<WifiScreen> {
           },
         );
       },
+    );
+  }
+
+  // --- Modal de error ---
+  void _mostrarError(String red) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        child: Container(
+          padding: const EdgeInsets.all(25),
+          decoration: BoxDecoration(
+            color: Colors.redAccent,
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.wifi_off, color: Colors.white, size: 70),
+              const SizedBox(height: 15),
+              const Text(
+                "No se pudo conectar",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.wifi, color: Colors.white70, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    red,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                "Verifica la contraseña e intenta de nuevo",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Intentar de nuevo"),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

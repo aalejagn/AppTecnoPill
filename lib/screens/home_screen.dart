@@ -586,125 +586,127 @@ class HomeScreen extends StatelessWidget {
 
           const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-          SliverToBoxAdapter(
-            child: StreamBuilder<List<Schedule>>(
-              stream: _escucharHorarios(),
-              builder: (context, snapshot) {
-                // 🔄 LOADING
-                if (!snapshot.hasData) {
-                  return const Padding(
+          StreamBuilder<List<Schedule>>(
+            stream: _escucharHorarios(),
+            builder: (context, snapshot) {
+              // 🔄 LOADING
+              if (!snapshot.hasData) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+                  ),
+                );
+              }
 
-                final horarios = snapshot.data!;
+              final horarios = snapshot.data!;
 
-                // 🚫 VACÍO
-                if (horarios.isEmpty) {
-                  return const Padding(
+              // 🚫 VACÍO
+              if (horarios.isEmpty) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: Text("No hay medicamentos activos")),
-                  );
-                }
+                  ),
+                );
+              }
 
-                // ✅ LISTA NORMAL
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: List.generate(horarios.length, (index) {
-                      final s = horarios[index];
-                      final horaToma = _calcularProximaHora(s);
+              // ✅ LISTA NORMAL — SliverList para scroll correcto
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final s = horarios[index];
+                    final horaToma = _calcularProximaHora(s);
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 15),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3D7DC8).withOpacity(0.08),
-                              blurRadius: 15,
-                              offset: const Offset(0, 4),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3D7DC8).withOpacity(0.08),
+                            blurRadius: 15,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3D7DC8).withOpacity(0.1),
+                              shape: BoxShape.circle,
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF3D7DC8).withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.medication_liquid,
-                                color: Color(0xFF3D7DC8),
-                              ),
+                            child: const Icon(
+                              Icons.medication_liquid,
+                              color: Color(0xFF3D7DC8),
                             ),
-                            const SizedBox(width: 15),
+                          ),
+                          const SizedBox(width: 15),
 
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    s.medicamento,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Paciente: ${s.pacienteNombre}",
-                                    style: const TextStyle(
-                                      color: Color(0xFF3D7DC8),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Casillero ${s.casillero}",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Próxima toma",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
                                 Text(
-                                  horaToma,
+                                  s.medicamento,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Paciente: ${s.pacienteNombre}",
+                                  style: const TextStyle(
                                     color: Color(0xFF3D7DC8),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "Casillero ${s.casillero}",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ),
-                );
-              },
-            ),
+                          ),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                "Próxima toma",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Text(
+                                horaToma,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3D7DC8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }, childCount: horarios.length),
+                ),
+              );
+            },
           ),
         ],
       ),

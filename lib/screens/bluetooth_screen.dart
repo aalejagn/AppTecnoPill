@@ -223,9 +223,34 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           ),
         ),
         trailing: estaConectado
-            ? const Icon(Icons.check_circle, color: Colors.green)
+            ? TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                icon: const Icon(Icons.bluetooth_disabled, size: 16),
+                label: const Text(
+                  "Desconectar",
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () async {
+                  await _bluetoothService.desconectar();
+                  if (mounted) {
+                    setState(() {
+                      _listaDispositivos = [];
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Bluetooth desconectado 🔌"),
+                      ),
+                    );
+                  }
+                },
+              )
             : const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: () => _mostrarDialogoConexion(context, scanResult),
+        onTap: estaConectado
+            ? null
+            : () => _mostrarDialogoConexion(context, scanResult),
       ),
     );
   }
