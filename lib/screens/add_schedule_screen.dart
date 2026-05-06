@@ -16,6 +16,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   final _nombreController = TextEditingController();
   final _intervaloController = TextEditingController();
   final _diasController = TextEditingController();
+  final _dosisController = TextEditingController();
 
   int? _casilleroSeleccionado;
   TimeOfDay _horaSeleccionada = TimeOfDay.now();
@@ -35,6 +36,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
       _nombreController.text = s.medicamento;
       _intervaloController.text = (s.intervaloMinutos ~/ 60).toString();
+      _dosisController.text = s.dosis;
       _diasController.text = (s.tomasRestantes ~/ (s.intervaloMinutos ~/ 60))
           .toString();
 
@@ -63,6 +65,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   }
 
   final WifiServicio _wifiServicio = WifiServicio();
+
   void _procesarGuardado() async {
     if (_pacienteSeleccionado == null ||
         _casilleroSeleccionado == null ||
@@ -108,6 +111,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
     final data = SchedulesCompanion(
       medicamento: Value(_nombreController.text),
+      dosis: Value(_dosisController.text), // nuevo
       pacienteNombre: Value(_pacienteSeleccionado!),
       casillero: Value(_casilleroSeleccionado!),
       //usamos la variables ajustadas
@@ -334,6 +338,9 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
             const SizedBox(height: 10),
 
+            _campo("Dosis (ej: 500mg)", _dosisController),
+            const SizedBox(height: 10),
+
             // HORA
             Container(
               decoration: BoxDecoration(
@@ -357,6 +364,20 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                     initialTime: _horaSeleccionada,
                   );
                   if (t != null) {
+                    final ahora = TimeOfDay.now();
+
+                    // ✅ CORREGIDO: Se usa 't' (la hora nueva) en vez de _horaSeleccionada
+                    int seleccion = t.hour * 60 + t.minute;
+                    int actual = ahora.hour * 60 + ahora.minute;
+
+                    if (seleccion <= actual) {
+                      _mostrarAlerta(
+                        "Error",
+                        "La hora debe ser mayor a la actual",
+                      );
+                      return;
+                    }
+
                     setState(() => _horaSeleccionada = t);
                   }
                 },

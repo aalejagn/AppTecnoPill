@@ -148,6 +148,9 @@ late final GeneratedColumn<int> id = GeneratedColumn<int>('id', aliasedName, fal
 static const VerificationMeta _medicamentoMeta = const VerificationMeta('medicamento');
 @override
 late final GeneratedColumn<String> medicamento = GeneratedColumn<String>('medicamento', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
+static const VerificationMeta _dosisMeta = const VerificationMeta('dosis');
+@override
+late final GeneratedColumn<String> dosis = GeneratedColumn<String>('dosis', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
 static const VerificationMeta _pacienteNombreMeta = const VerificationMeta('pacienteNombre');
 @override
 late final GeneratedColumn<String> pacienteNombre = GeneratedColumn<String>('paciente_nombre', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
@@ -166,11 +169,20 @@ late final GeneratedColumn<int> intervaloMinutos = GeneratedColumn<int>('interva
 static const VerificationMeta _tomasRestantesMeta = const VerificationMeta('tomasRestantes');
 @override
 late final GeneratedColumn<int> tomasRestantes = GeneratedColumn<int>('tomas_restantes', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: true);
+static const VerificationMeta _tomadasMeta = const VerificationMeta('tomadas');
+@override
+late final GeneratedColumn<int> tomadas = GeneratedColumn<int>('tomadas', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: false, defaultValue: const Constant(0));
+static const VerificationMeta _omitidasMeta = const VerificationMeta('omitidas');
+@override
+late final GeneratedColumn<int> omitidas = GeneratedColumn<int>('omitidas', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: false, defaultValue: const Constant(0));
+static const VerificationMeta _ultimaOmitidaMeta = const VerificationMeta('ultimaOmitida');
+@override
+late final GeneratedColumn<DateTime> ultimaOmitida = GeneratedColumn<DateTime>('ultima_omitida', aliasedName, true, type: DriftSqlType.dateTime, requiredDuringInsert: false);
 static const VerificationMeta _fechaCreacionMeta = const VerificationMeta('fechaCreacion');
 @override
 late final GeneratedColumn<DateTime> fechaCreacion = GeneratedColumn<DateTime>('fecha_creacion', aliasedName, false, type: DriftSqlType.dateTime, requiredDuringInsert: true);
 @override
-List<GeneratedColumn> get $columns => [id, medicamento, pacienteNombre, casillero, horaProxima, minutoProxima, intervaloMinutos, tomasRestantes, fechaCreacion];
+List<GeneratedColumn> get $columns => [id, medicamento, dosis, pacienteNombre, casillero, horaProxima, minutoProxima, intervaloMinutos, tomasRestantes, tomadas, omitidas, ultimaOmitida, fechaCreacion];
 @override
 String get aliasedName => _alias ?? actualTableName;
 @override
@@ -184,6 +196,10 @@ if (data.containsKey('id')) {
 context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));}if (data.containsKey('medicamento')) {
 context.handle(_medicamentoMeta, medicamento.isAcceptableOrUnknown(data['medicamento']!, _medicamentoMeta));} else if (isInserting) {
 context.missing(_medicamentoMeta);
+}
+if (data.containsKey('dosis')) {
+context.handle(_dosisMeta, dosis.isAcceptableOrUnknown(data['dosis']!, _dosisMeta));} else if (isInserting) {
+context.missing(_dosisMeta);
 }
 if (data.containsKey('paciente_nombre')) {
 context.handle(_pacienteNombreMeta, pacienteNombre.isAcceptableOrUnknown(data['paciente_nombre']!, _pacienteNombreMeta));} else if (isInserting) {
@@ -209,7 +225,10 @@ if (data.containsKey('tomas_restantes')) {
 context.handle(_tomasRestantesMeta, tomasRestantes.isAcceptableOrUnknown(data['tomas_restantes']!, _tomasRestantesMeta));} else if (isInserting) {
 context.missing(_tomasRestantesMeta);
 }
-if (data.containsKey('fecha_creacion')) {
+if (data.containsKey('tomadas')) {
+context.handle(_tomadasMeta, tomadas.isAcceptableOrUnknown(data['tomadas']!, _tomadasMeta));}if (data.containsKey('omitidas')) {
+context.handle(_omitidasMeta, omitidas.isAcceptableOrUnknown(data['omitidas']!, _omitidasMeta));}if (data.containsKey('ultima_omitida')) {
+context.handle(_ultimaOmitidaMeta, ultimaOmitida.isAcceptableOrUnknown(data['ultima_omitida']!, _ultimaOmitidaMeta));}if (data.containsKey('fecha_creacion')) {
 context.handle(_fechaCreacionMeta, fechaCreacion.isAcceptableOrUnknown(data['fecha_creacion']!, _fechaCreacionMeta));} else if (isInserting) {
 context.missing(_fechaCreacionMeta);
 }
@@ -218,7 +237,7 @@ return context;
 @override
 Set<GeneratedColumn> get $primaryKey => {id};
 @override Schedule map(Map<String, dynamic> data, {String? tablePrefix})  {
-final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';return Schedule(id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!, medicamento: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}medicamento'])!, pacienteNombre: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}paciente_nombre'])!, casillero: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}casillero'])!, horaProxima: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}hora_proxima'])!, minutoProxima: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}minuto_proxima'])!, intervaloMinutos: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}intervalo_minutos'])!, tomasRestantes: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}tomas_restantes'])!, fechaCreacion: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}fecha_creacion'])!, );
+final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';return Schedule(id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!, medicamento: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}medicamento'])!, dosis: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}dosis'])!, pacienteNombre: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}paciente_nombre'])!, casillero: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}casillero'])!, horaProxima: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}hora_proxima'])!, minutoProxima: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}minuto_proxima'])!, intervaloMinutos: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}intervalo_minutos'])!, tomasRestantes: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}tomas_restantes'])!, tomadas: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}tomadas'])!, omitidas: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}omitidas'])!, ultimaOmitida: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}ultima_omitida']), fechaCreacion: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}fecha_creacion'])!, );
 }
 @override
 $SchedulesTable createAlias(String alias) {
@@ -226,69 +245,85 @@ return $SchedulesTable(attachedDatabase, alias);}}class Schedule extends DataCla
 {
 final int id;
 final String medicamento;
+final String dosis;
 final String pacienteNombre;
 final int casillero;
 final int horaProxima;
 final int minutoProxima;
 final int intervaloMinutos;
 final int tomasRestantes;
+final int tomadas;
+final int omitidas;
+final DateTime? ultimaOmitida;
 final DateTime fechaCreacion;
-const Schedule({required this.id, required this.medicamento, required this.pacienteNombre, required this.casillero, required this.horaProxima, required this.minutoProxima, required this.intervaloMinutos, required this.tomasRestantes, required this.fechaCreacion});@override
+const Schedule({required this.id, required this.medicamento, required this.dosis, required this.pacienteNombre, required this.casillero, required this.horaProxima, required this.minutoProxima, required this.intervaloMinutos, required this.tomasRestantes, required this.tomadas, required this.omitidas, this.ultimaOmitida, required this.fechaCreacion});@override
 Map<String, Expression> toColumns(bool nullToAbsent) {
 final map = <String, Expression> {};map['id'] = Variable<int>(id);
 map['medicamento'] = Variable<String>(medicamento);
+map['dosis'] = Variable<String>(dosis);
 map['paciente_nombre'] = Variable<String>(pacienteNombre);
 map['casillero'] = Variable<int>(casillero);
 map['hora_proxima'] = Variable<int>(horaProxima);
 map['minuto_proxima'] = Variable<int>(minutoProxima);
 map['intervalo_minutos'] = Variable<int>(intervaloMinutos);
 map['tomas_restantes'] = Variable<int>(tomasRestantes);
-map['fecha_creacion'] = Variable<DateTime>(fechaCreacion);
+map['tomadas'] = Variable<int>(tomadas);
+map['omitidas'] = Variable<int>(omitidas);
+if (!nullToAbsent || ultimaOmitida != null){map['ultima_omitida'] = Variable<DateTime>(ultimaOmitida);
+}map['fecha_creacion'] = Variable<DateTime>(fechaCreacion);
 return map; 
 }
 SchedulesCompanion toCompanion(bool nullToAbsent) {
-return SchedulesCompanion(id: Value(id),medicamento: Value(medicamento),pacienteNombre: Value(pacienteNombre),casillero: Value(casillero),horaProxima: Value(horaProxima),minutoProxima: Value(minutoProxima),intervaloMinutos: Value(intervaloMinutos),tomasRestantes: Value(tomasRestantes),fechaCreacion: Value(fechaCreacion),);
+return SchedulesCompanion(id: Value(id),medicamento: Value(medicamento),dosis: Value(dosis),pacienteNombre: Value(pacienteNombre),casillero: Value(casillero),horaProxima: Value(horaProxima),minutoProxima: Value(minutoProxima),intervaloMinutos: Value(intervaloMinutos),tomasRestantes: Value(tomasRestantes),tomadas: Value(tomadas),omitidas: Value(omitidas),ultimaOmitida: ultimaOmitida == null && nullToAbsent ? const Value.absent() : Value(ultimaOmitida),fechaCreacion: Value(fechaCreacion),);
 }
 factory Schedule.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
 serializer ??= driftRuntimeOptions.defaultSerializer;
-return Schedule(id: serializer.fromJson<int>(json['id']),medicamento: serializer.fromJson<String>(json['medicamento']),pacienteNombre: serializer.fromJson<String>(json['pacienteNombre']),casillero: serializer.fromJson<int>(json['casillero']),horaProxima: serializer.fromJson<int>(json['horaProxima']),minutoProxima: serializer.fromJson<int>(json['minutoProxima']),intervaloMinutos: serializer.fromJson<int>(json['intervaloMinutos']),tomasRestantes: serializer.fromJson<int>(json['tomasRestantes']),fechaCreacion: serializer.fromJson<DateTime>(json['fechaCreacion']),);}
+return Schedule(id: serializer.fromJson<int>(json['id']),medicamento: serializer.fromJson<String>(json['medicamento']),dosis: serializer.fromJson<String>(json['dosis']),pacienteNombre: serializer.fromJson<String>(json['pacienteNombre']),casillero: serializer.fromJson<int>(json['casillero']),horaProxima: serializer.fromJson<int>(json['horaProxima']),minutoProxima: serializer.fromJson<int>(json['minutoProxima']),intervaloMinutos: serializer.fromJson<int>(json['intervaloMinutos']),tomasRestantes: serializer.fromJson<int>(json['tomasRestantes']),tomadas: serializer.fromJson<int>(json['tomadas']),omitidas: serializer.fromJson<int>(json['omitidas']),ultimaOmitida: serializer.fromJson<DateTime?>(json['ultimaOmitida']),fechaCreacion: serializer.fromJson<DateTime>(json['fechaCreacion']),);}
 @override Map<String, dynamic> toJson({ValueSerializer? serializer}) {
 serializer ??= driftRuntimeOptions.defaultSerializer;
 return <String, dynamic>{
-'id': serializer.toJson<int>(id),'medicamento': serializer.toJson<String>(medicamento),'pacienteNombre': serializer.toJson<String>(pacienteNombre),'casillero': serializer.toJson<int>(casillero),'horaProxima': serializer.toJson<int>(horaProxima),'minutoProxima': serializer.toJson<int>(minutoProxima),'intervaloMinutos': serializer.toJson<int>(intervaloMinutos),'tomasRestantes': serializer.toJson<int>(tomasRestantes),'fechaCreacion': serializer.toJson<DateTime>(fechaCreacion),};}Schedule copyWith({int? id,String? medicamento,String? pacienteNombre,int? casillero,int? horaProxima,int? minutoProxima,int? intervaloMinutos,int? tomasRestantes,DateTime? fechaCreacion}) => Schedule(id: id ?? this.id,medicamento: medicamento ?? this.medicamento,pacienteNombre: pacienteNombre ?? this.pacienteNombre,casillero: casillero ?? this.casillero,horaProxima: horaProxima ?? this.horaProxima,minutoProxima: minutoProxima ?? this.minutoProxima,intervaloMinutos: intervaloMinutos ?? this.intervaloMinutos,tomasRestantes: tomasRestantes ?? this.tomasRestantes,fechaCreacion: fechaCreacion ?? this.fechaCreacion,);Schedule copyWithCompanion(SchedulesCompanion data) {
+'id': serializer.toJson<int>(id),'medicamento': serializer.toJson<String>(medicamento),'dosis': serializer.toJson<String>(dosis),'pacienteNombre': serializer.toJson<String>(pacienteNombre),'casillero': serializer.toJson<int>(casillero),'horaProxima': serializer.toJson<int>(horaProxima),'minutoProxima': serializer.toJson<int>(minutoProxima),'intervaloMinutos': serializer.toJson<int>(intervaloMinutos),'tomasRestantes': serializer.toJson<int>(tomasRestantes),'tomadas': serializer.toJson<int>(tomadas),'omitidas': serializer.toJson<int>(omitidas),'ultimaOmitida': serializer.toJson<DateTime?>(ultimaOmitida),'fechaCreacion': serializer.toJson<DateTime>(fechaCreacion),};}Schedule copyWith({int? id,String? medicamento,String? dosis,String? pacienteNombre,int? casillero,int? horaProxima,int? minutoProxima,int? intervaloMinutos,int? tomasRestantes,int? tomadas,int? omitidas,Value<DateTime?> ultimaOmitida = const Value.absent(),DateTime? fechaCreacion}) => Schedule(id: id ?? this.id,medicamento: medicamento ?? this.medicamento,dosis: dosis ?? this.dosis,pacienteNombre: pacienteNombre ?? this.pacienteNombre,casillero: casillero ?? this.casillero,horaProxima: horaProxima ?? this.horaProxima,minutoProxima: minutoProxima ?? this.minutoProxima,intervaloMinutos: intervaloMinutos ?? this.intervaloMinutos,tomasRestantes: tomasRestantes ?? this.tomasRestantes,tomadas: tomadas ?? this.tomadas,omitidas: omitidas ?? this.omitidas,ultimaOmitida: ultimaOmitida.present ? ultimaOmitida.value : this.ultimaOmitida,fechaCreacion: fechaCreacion ?? this.fechaCreacion,);Schedule copyWithCompanion(SchedulesCompanion data) {
 return Schedule(
-id: data.id.present ? data.id.value : this.id,medicamento: data.medicamento.present ? data.medicamento.value : this.medicamento,pacienteNombre: data.pacienteNombre.present ? data.pacienteNombre.value : this.pacienteNombre,casillero: data.casillero.present ? data.casillero.value : this.casillero,horaProxima: data.horaProxima.present ? data.horaProxima.value : this.horaProxima,minutoProxima: data.minutoProxima.present ? data.minutoProxima.value : this.minutoProxima,intervaloMinutos: data.intervaloMinutos.present ? data.intervaloMinutos.value : this.intervaloMinutos,tomasRestantes: data.tomasRestantes.present ? data.tomasRestantes.value : this.tomasRestantes,fechaCreacion: data.fechaCreacion.present ? data.fechaCreacion.value : this.fechaCreacion,);
+id: data.id.present ? data.id.value : this.id,medicamento: data.medicamento.present ? data.medicamento.value : this.medicamento,dosis: data.dosis.present ? data.dosis.value : this.dosis,pacienteNombre: data.pacienteNombre.present ? data.pacienteNombre.value : this.pacienteNombre,casillero: data.casillero.present ? data.casillero.value : this.casillero,horaProxima: data.horaProxima.present ? data.horaProxima.value : this.horaProxima,minutoProxima: data.minutoProxima.present ? data.minutoProxima.value : this.minutoProxima,intervaloMinutos: data.intervaloMinutos.present ? data.intervaloMinutos.value : this.intervaloMinutos,tomasRestantes: data.tomasRestantes.present ? data.tomasRestantes.value : this.tomasRestantes,tomadas: data.tomadas.present ? data.tomadas.value : this.tomadas,omitidas: data.omitidas.present ? data.omitidas.value : this.omitidas,ultimaOmitida: data.ultimaOmitida.present ? data.ultimaOmitida.value : this.ultimaOmitida,fechaCreacion: data.fechaCreacion.present ? data.fechaCreacion.value : this.fechaCreacion,);
 }
 @override
-String toString() {return (StringBuffer('Schedule(')..write('id: $id, ')..write('medicamento: $medicamento, ')..write('pacienteNombre: $pacienteNombre, ')..write('casillero: $casillero, ')..write('horaProxima: $horaProxima, ')..write('minutoProxima: $minutoProxima, ')..write('intervaloMinutos: $intervaloMinutos, ')..write('tomasRestantes: $tomasRestantes, ')..write('fechaCreacion: $fechaCreacion')..write(')')).toString();}
+String toString() {return (StringBuffer('Schedule(')..write('id: $id, ')..write('medicamento: $medicamento, ')..write('dosis: $dosis, ')..write('pacienteNombre: $pacienteNombre, ')..write('casillero: $casillero, ')..write('horaProxima: $horaProxima, ')..write('minutoProxima: $minutoProxima, ')..write('intervaloMinutos: $intervaloMinutos, ')..write('tomasRestantes: $tomasRestantes, ')..write('tomadas: $tomadas, ')..write('omitidas: $omitidas, ')..write('ultimaOmitida: $ultimaOmitida, ')..write('fechaCreacion: $fechaCreacion')..write(')')).toString();}
 @override
- int get hashCode => Object.hash(id, medicamento, pacienteNombre, casillero, horaProxima, minutoProxima, intervaloMinutos, tomasRestantes, fechaCreacion);@override
-bool operator ==(Object other) => identical(this, other) || (other is Schedule && other.id == this.id && other.medicamento == this.medicamento && other.pacienteNombre == this.pacienteNombre && other.casillero == this.casillero && other.horaProxima == this.horaProxima && other.minutoProxima == this.minutoProxima && other.intervaloMinutos == this.intervaloMinutos && other.tomasRestantes == this.tomasRestantes && other.fechaCreacion == this.fechaCreacion);
+ int get hashCode => Object.hash(id, medicamento, dosis, pacienteNombre, casillero, horaProxima, minutoProxima, intervaloMinutos, tomasRestantes, tomadas, omitidas, ultimaOmitida, fechaCreacion);@override
+bool operator ==(Object other) => identical(this, other) || (other is Schedule && other.id == this.id && other.medicamento == this.medicamento && other.dosis == this.dosis && other.pacienteNombre == this.pacienteNombre && other.casillero == this.casillero && other.horaProxima == this.horaProxima && other.minutoProxima == this.minutoProxima && other.intervaloMinutos == this.intervaloMinutos && other.tomasRestantes == this.tomasRestantes && other.tomadas == this.tomadas && other.omitidas == this.omitidas && other.ultimaOmitida == this.ultimaOmitida && other.fechaCreacion == this.fechaCreacion);
 }class SchedulesCompanion extends UpdateCompanion<Schedule> {
 final Value<int> id;
 final Value<String> medicamento;
+final Value<String> dosis;
 final Value<String> pacienteNombre;
 final Value<int> casillero;
 final Value<int> horaProxima;
 final Value<int> minutoProxima;
 final Value<int> intervaloMinutos;
 final Value<int> tomasRestantes;
+final Value<int> tomadas;
+final Value<int> omitidas;
+final Value<DateTime?> ultimaOmitida;
 final Value<DateTime> fechaCreacion;
-const SchedulesCompanion({this.id = const Value.absent(),this.medicamento = const Value.absent(),this.pacienteNombre = const Value.absent(),this.casillero = const Value.absent(),this.horaProxima = const Value.absent(),this.minutoProxima = const Value.absent(),this.intervaloMinutos = const Value.absent(),this.tomasRestantes = const Value.absent(),this.fechaCreacion = const Value.absent(),});
-SchedulesCompanion.insert({this.id = const Value.absent(),required String medicamento,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,required DateTime fechaCreacion,}): medicamento = Value(medicamento), pacienteNombre = Value(pacienteNombre), casillero = Value(casillero), horaProxima = Value(horaProxima), minutoProxima = Value(minutoProxima), intervaloMinutos = Value(intervaloMinutos), tomasRestantes = Value(tomasRestantes), fechaCreacion = Value(fechaCreacion);
+const SchedulesCompanion({this.id = const Value.absent(),this.medicamento = const Value.absent(),this.dosis = const Value.absent(),this.pacienteNombre = const Value.absent(),this.casillero = const Value.absent(),this.horaProxima = const Value.absent(),this.minutoProxima = const Value.absent(),this.intervaloMinutos = const Value.absent(),this.tomasRestantes = const Value.absent(),this.tomadas = const Value.absent(),this.omitidas = const Value.absent(),this.ultimaOmitida = const Value.absent(),this.fechaCreacion = const Value.absent(),});
+SchedulesCompanion.insert({this.id = const Value.absent(),required String medicamento,required String dosis,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,this.tomadas = const Value.absent(),this.omitidas = const Value.absent(),this.ultimaOmitida = const Value.absent(),required DateTime fechaCreacion,}): medicamento = Value(medicamento), dosis = Value(dosis), pacienteNombre = Value(pacienteNombre), casillero = Value(casillero), horaProxima = Value(horaProxima), minutoProxima = Value(minutoProxima), intervaloMinutos = Value(intervaloMinutos), tomasRestantes = Value(tomasRestantes), fechaCreacion = Value(fechaCreacion);
 static Insertable<Schedule> custom({Expression<int>? id, 
 Expression<String>? medicamento, 
+Expression<String>? dosis, 
 Expression<String>? pacienteNombre, 
 Expression<int>? casillero, 
 Expression<int>? horaProxima, 
 Expression<int>? minutoProxima, 
 Expression<int>? intervaloMinutos, 
 Expression<int>? tomasRestantes, 
+Expression<int>? tomadas, 
+Expression<int>? omitidas, 
+Expression<DateTime>? ultimaOmitida, 
 Expression<DateTime>? fechaCreacion, 
 }) {
-return RawValuesInsertable({if (id != null)'id': id,if (medicamento != null)'medicamento': medicamento,if (pacienteNombre != null)'paciente_nombre': pacienteNombre,if (casillero != null)'casillero': casillero,if (horaProxima != null)'hora_proxima': horaProxima,if (minutoProxima != null)'minuto_proxima': minutoProxima,if (intervaloMinutos != null)'intervalo_minutos': intervaloMinutos,if (tomasRestantes != null)'tomas_restantes': tomasRestantes,if (fechaCreacion != null)'fecha_creacion': fechaCreacion,});
-}SchedulesCompanion copyWith({Value<int>? id, Value<String>? medicamento, Value<String>? pacienteNombre, Value<int>? casillero, Value<int>? horaProxima, Value<int>? minutoProxima, Value<int>? intervaloMinutos, Value<int>? tomasRestantes, Value<DateTime>? fechaCreacion}) {
-return SchedulesCompanion(id: id ?? this.id,medicamento: medicamento ?? this.medicamento,pacienteNombre: pacienteNombre ?? this.pacienteNombre,casillero: casillero ?? this.casillero,horaProxima: horaProxima ?? this.horaProxima,minutoProxima: minutoProxima ?? this.minutoProxima,intervaloMinutos: intervaloMinutos ?? this.intervaloMinutos,tomasRestantes: tomasRestantes ?? this.tomasRestantes,fechaCreacion: fechaCreacion ?? this.fechaCreacion,);
+return RawValuesInsertable({if (id != null)'id': id,if (medicamento != null)'medicamento': medicamento,if (dosis != null)'dosis': dosis,if (pacienteNombre != null)'paciente_nombre': pacienteNombre,if (casillero != null)'casillero': casillero,if (horaProxima != null)'hora_proxima': horaProxima,if (minutoProxima != null)'minuto_proxima': minutoProxima,if (intervaloMinutos != null)'intervalo_minutos': intervaloMinutos,if (tomasRestantes != null)'tomas_restantes': tomasRestantes,if (tomadas != null)'tomadas': tomadas,if (omitidas != null)'omitidas': omitidas,if (ultimaOmitida != null)'ultima_omitida': ultimaOmitida,if (fechaCreacion != null)'fecha_creacion': fechaCreacion,});
+}SchedulesCompanion copyWith({Value<int>? id, Value<String>? medicamento, Value<String>? dosis, Value<String>? pacienteNombre, Value<int>? casillero, Value<int>? horaProxima, Value<int>? minutoProxima, Value<int>? intervaloMinutos, Value<int>? tomasRestantes, Value<int>? tomadas, Value<int>? omitidas, Value<DateTime?>? ultimaOmitida, Value<DateTime>? fechaCreacion}) {
+return SchedulesCompanion(id: id ?? this.id,medicamento: medicamento ?? this.medicamento,dosis: dosis ?? this.dosis,pacienteNombre: pacienteNombre ?? this.pacienteNombre,casillero: casillero ?? this.casillero,horaProxima: horaProxima ?? this.horaProxima,minutoProxima: minutoProxima ?? this.minutoProxima,intervaloMinutos: intervaloMinutos ?? this.intervaloMinutos,tomasRestantes: tomasRestantes ?? this.tomasRestantes,tomadas: tomadas ?? this.tomadas,omitidas: omitidas ?? this.omitidas,ultimaOmitida: ultimaOmitida ?? this.ultimaOmitida,fechaCreacion: fechaCreacion ?? this.fechaCreacion,);
 }
 @override
 Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -296,6 +331,8 @@ final map = <String, Expression> {};if (id.present) {
 map['id'] = Variable<int>(id.value);}
 if (medicamento.present) {
 map['medicamento'] = Variable<String>(medicamento.value);}
+if (dosis.present) {
+map['dosis'] = Variable<String>(dosis.value);}
 if (pacienteNombre.present) {
 map['paciente_nombre'] = Variable<String>(pacienteNombre.value);}
 if (casillero.present) {
@@ -308,12 +345,18 @@ if (intervaloMinutos.present) {
 map['intervalo_minutos'] = Variable<int>(intervaloMinutos.value);}
 if (tomasRestantes.present) {
 map['tomas_restantes'] = Variable<int>(tomasRestantes.value);}
+if (tomadas.present) {
+map['tomadas'] = Variable<int>(tomadas.value);}
+if (omitidas.present) {
+map['omitidas'] = Variable<int>(omitidas.value);}
+if (ultimaOmitida.present) {
+map['ultima_omitida'] = Variable<DateTime>(ultimaOmitida.value);}
 if (fechaCreacion.present) {
 map['fecha_creacion'] = Variable<DateTime>(fechaCreacion.value);}
 return map; 
 }
 @override
-String toString() {return (StringBuffer('SchedulesCompanion(')..write('id: $id, ')..write('medicamento: $medicamento, ')..write('pacienteNombre: $pacienteNombre, ')..write('casillero: $casillero, ')..write('horaProxima: $horaProxima, ')..write('minutoProxima: $minutoProxima, ')..write('intervaloMinutos: $intervaloMinutos, ')..write('tomasRestantes: $tomasRestantes, ')..write('fechaCreacion: $fechaCreacion')..write(')')).toString();}
+String toString() {return (StringBuffer('SchedulesCompanion(')..write('id: $id, ')..write('medicamento: $medicamento, ')..write('dosis: $dosis, ')..write('pacienteNombre: $pacienteNombre, ')..write('casillero: $casillero, ')..write('horaProxima: $horaProxima, ')..write('minutoProxima: $minutoProxima, ')..write('intervaloMinutos: $intervaloMinutos, ')..write('tomasRestantes: $tomasRestantes, ')..write('tomadas: $tomadas, ')..write('omitidas: $omitidas, ')..write('ultimaOmitida: $ultimaOmitida, ')..write('fechaCreacion: $fechaCreacion')..write(')')).toString();}
 }
 abstract class _$AppDatabase extends GeneratedDatabase{
 _$AppDatabase(QueryExecutor e): super(e);
@@ -485,8 +528,8 @@ GeneratedColumn<String> get telefono => $composableBuilder(
     (Patient,BaseReferences<_$AppDatabase,$PatientsTable,Patient>),
     Patient,
     PrefetchHooks Function()
-    >;typedef $$SchedulesTableCreateCompanionBuilder = SchedulesCompanion Function({Value<int> id,required String medicamento,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,required DateTime fechaCreacion,});
-typedef $$SchedulesTableUpdateCompanionBuilder = SchedulesCompanion Function({Value<int> id,Value<String> medicamento,Value<String> pacienteNombre,Value<int> casillero,Value<int> horaProxima,Value<int> minutoProxima,Value<int> intervaloMinutos,Value<int> tomasRestantes,Value<DateTime> fechaCreacion,});
+    >;typedef $$SchedulesTableCreateCompanionBuilder = SchedulesCompanion Function({Value<int> id,required String medicamento,required String dosis,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,Value<int> tomadas,Value<int> omitidas,Value<DateTime?> ultimaOmitida,required DateTime fechaCreacion,});
+typedef $$SchedulesTableUpdateCompanionBuilder = SchedulesCompanion Function({Value<int> id,Value<String> medicamento,Value<String> dosis,Value<String> pacienteNombre,Value<int> casillero,Value<int> horaProxima,Value<int> minutoProxima,Value<int> intervaloMinutos,Value<int> tomasRestantes,Value<int> tomadas,Value<int> omitidas,Value<DateTime?> ultimaOmitida,Value<DateTime> fechaCreacion,});
 class $$SchedulesTableFilterComposer extends Composer<
         _$AppDatabase,
         $SchedulesTable> {
@@ -504,6 +547,11 @@ class $$SchedulesTableFilterComposer extends Composer<
       
 ColumnFilters<String> get medicamento => $composableBuilder(
       column: $table.medicamento,
+      builder: (column) => 
+      ColumnFilters(column));
+      
+ColumnFilters<String> get dosis => $composableBuilder(
+      column: $table.dosis,
       builder: (column) => 
       ColumnFilters(column));
       
@@ -537,6 +585,21 @@ ColumnFilters<int> get tomasRestantes => $composableBuilder(
       builder: (column) => 
       ColumnFilters(column));
       
+ColumnFilters<int> get tomadas => $composableBuilder(
+      column: $table.tomadas,
+      builder: (column) => 
+      ColumnFilters(column));
+      
+ColumnFilters<int> get omitidas => $composableBuilder(
+      column: $table.omitidas,
+      builder: (column) => 
+      ColumnFilters(column));
+      
+ColumnFilters<DateTime> get ultimaOmitida => $composableBuilder(
+      column: $table.ultimaOmitida,
+      builder: (column) => 
+      ColumnFilters(column));
+      
 ColumnFilters<DateTime> get fechaCreacion => $composableBuilder(
       column: $table.fechaCreacion,
       builder: (column) => 
@@ -560,6 +623,11 @@ ColumnFilters<DateTime> get fechaCreacion => $composableBuilder(
       
 ColumnOrderings<String> get medicamento => $composableBuilder(
       column: $table.medicamento,
+      builder: (column) => 
+      ColumnOrderings(column));
+      
+ColumnOrderings<String> get dosis => $composableBuilder(
+      column: $table.dosis,
       builder: (column) => 
       ColumnOrderings(column));
       
@@ -593,6 +661,21 @@ ColumnOrderings<int> get tomasRestantes => $composableBuilder(
       builder: (column) => 
       ColumnOrderings(column));
       
+ColumnOrderings<int> get tomadas => $composableBuilder(
+      column: $table.tomadas,
+      builder: (column) => 
+      ColumnOrderings(column));
+      
+ColumnOrderings<int> get omitidas => $composableBuilder(
+      column: $table.omitidas,
+      builder: (column) => 
+      ColumnOrderings(column));
+      
+ColumnOrderings<DateTime> get ultimaOmitida => $composableBuilder(
+      column: $table.ultimaOmitida,
+      builder: (column) => 
+      ColumnOrderings(column));
+      
 ColumnOrderings<DateTime> get fechaCreacion => $composableBuilder(
       column: $table.fechaCreacion,
       builder: (column) => 
@@ -615,6 +698,10 @@ ColumnOrderings<DateTime> get fechaCreacion => $composableBuilder(
       
 GeneratedColumn<String> get medicamento => $composableBuilder(
       column: $table.medicamento,
+      builder: (column) => column);
+      
+GeneratedColumn<String> get dosis => $composableBuilder(
+      column: $table.dosis,
       builder: (column) => column);
       
 GeneratedColumn<String> get pacienteNombre => $composableBuilder(
@@ -641,6 +728,18 @@ GeneratedColumn<int> get tomasRestantes => $composableBuilder(
       column: $table.tomasRestantes,
       builder: (column) => column);
       
+GeneratedColumn<int> get tomadas => $composableBuilder(
+      column: $table.tomadas,
+      builder: (column) => column);
+      
+GeneratedColumn<int> get omitidas => $composableBuilder(
+      column: $table.omitidas,
+      builder: (column) => column);
+      
+GeneratedColumn<DateTime> get ultimaOmitida => $composableBuilder(
+      column: $table.ultimaOmitida,
+      builder: (column) => column);
+      
 GeneratedColumn<DateTime> get fechaCreacion => $composableBuilder(
       column: $table.fechaCreacion,
       builder: (column) => column);
@@ -665,8 +764,8 @@ GeneratedColumn<DateTime> get fechaCreacion => $composableBuilder(
         createFilteringComposer: () => $$SchedulesTableFilterComposer($db: db,$table:table),
         createOrderingComposer: () => $$SchedulesTableOrderingComposer($db: db,$table:table),
         createComputedFieldComposer: () => $$SchedulesTableAnnotationComposer($db: db,$table:table),
-        updateCompanionCallback: ({Value<int> id = const Value.absent(),Value<String> medicamento = const Value.absent(),Value<String> pacienteNombre = const Value.absent(),Value<int> casillero = const Value.absent(),Value<int> horaProxima = const Value.absent(),Value<int> minutoProxima = const Value.absent(),Value<int> intervaloMinutos = const Value.absent(),Value<int> tomasRestantes = const Value.absent(),Value<DateTime> fechaCreacion = const Value.absent(),})=> SchedulesCompanion(id: id,medicamento: medicamento,pacienteNombre: pacienteNombre,casillero: casillero,horaProxima: horaProxima,minutoProxima: minutoProxima,intervaloMinutos: intervaloMinutos,tomasRestantes: tomasRestantes,fechaCreacion: fechaCreacion,),
-        createCompanionCallback: ({Value<int> id = const Value.absent(),required String medicamento,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,required DateTime fechaCreacion,})=> SchedulesCompanion.insert(id: id,medicamento: medicamento,pacienteNombre: pacienteNombre,casillero: casillero,horaProxima: horaProxima,minutoProxima: minutoProxima,intervaloMinutos: intervaloMinutos,tomasRestantes: tomasRestantes,fechaCreacion: fechaCreacion,),
+        updateCompanionCallback: ({Value<int> id = const Value.absent(),Value<String> medicamento = const Value.absent(),Value<String> dosis = const Value.absent(),Value<String> pacienteNombre = const Value.absent(),Value<int> casillero = const Value.absent(),Value<int> horaProxima = const Value.absent(),Value<int> minutoProxima = const Value.absent(),Value<int> intervaloMinutos = const Value.absent(),Value<int> tomasRestantes = const Value.absent(),Value<int> tomadas = const Value.absent(),Value<int> omitidas = const Value.absent(),Value<DateTime?> ultimaOmitida = const Value.absent(),Value<DateTime> fechaCreacion = const Value.absent(),})=> SchedulesCompanion(id: id,medicamento: medicamento,dosis: dosis,pacienteNombre: pacienteNombre,casillero: casillero,horaProxima: horaProxima,minutoProxima: minutoProxima,intervaloMinutos: intervaloMinutos,tomasRestantes: tomasRestantes,tomadas: tomadas,omitidas: omitidas,ultimaOmitida: ultimaOmitida,fechaCreacion: fechaCreacion,),
+        createCompanionCallback: ({Value<int> id = const Value.absent(),required String medicamento,required String dosis,required String pacienteNombre,required int casillero,required int horaProxima,required int minutoProxima,required int intervaloMinutos,required int tomasRestantes,Value<int> tomadas = const Value.absent(),Value<int> omitidas = const Value.absent(),Value<DateTime?> ultimaOmitida = const Value.absent(),required DateTime fechaCreacion,})=> SchedulesCompanion.insert(id: id,medicamento: medicamento,dosis: dosis,pacienteNombre: pacienteNombre,casillero: casillero,horaProxima: horaProxima,minutoProxima: minutoProxima,intervaloMinutos: intervaloMinutos,tomasRestantes: tomasRestantes,tomadas: tomadas,omitidas: omitidas,ultimaOmitida: ultimaOmitida,fechaCreacion: fechaCreacion,),
         withReferenceMapper: (p0) => p0
               .map(
                   (e) =>

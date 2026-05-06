@@ -88,4 +88,32 @@ class WifiServicio {
       return false;
     }
   }
+
+  Future<void> escucharESP32() async {
+    final ip = ipTecnoPill;
+
+    try {
+      final response = await http.get(Uri.parse('http://$ip/estado'));
+
+      if (response.statusCode == 200) {
+        final data = response.body.split(',');
+
+        int casillero = int.parse(data[0]);
+        String estado = data[1];
+
+        // 🚨 IMPORTANTE: ignorar cuando no hay evento
+        if (casillero == 0 || estado == "none") {
+          return;
+        }
+
+        bool tomada = estado == "tomada";
+
+        print("Evento ESP32 → Casillero $casillero | Estado: $estado");
+
+        await db.actualizarTomaDesdeESP32(casillero, tomada);
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 }
