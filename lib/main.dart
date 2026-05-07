@@ -122,12 +122,16 @@ class _MainScreenState extends State<MainScreen>
     final fabCenterX = size.width / 2;
 
     // 🔥 FIX correcto
-    final fabCenterY = size.height - padding.bottom - 90;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    final fabCenterY =
+        size.height - padding.bottom - keyboardHeight - 90;
 
     final double radius = size.width * 0.23;
     const double btnSize = 64;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
 
       drawer: Drawer(

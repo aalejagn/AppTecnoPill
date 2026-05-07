@@ -248,8 +248,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
               int horasIntervalo = s.intervaloMinutos ~/ 60;
 
-              int dias = (s.tomasRestantes / ((24 * 60) ~/ s.intervaloMinutos))
-                  .ceil(); // aproximado
+              // int dias = (s.tomasRestantes / ((24 * 60) ~/ s.intervaloMinutos))
+              //     .ceil(); // aproximado
 
               int tomasTotales = s.tomasRestantes + s.tomadas + s.omitidas;
               return Container(

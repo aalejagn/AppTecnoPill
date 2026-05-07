@@ -11,12 +11,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool recordatorios = true;
   bool bluetoothActivo = true;
 
+  // ---------- COMPONENTES REUTILIZABLES ----------
+
   Widget sectionCard({required Widget child}) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 3,
-      child: Padding(padding: const EdgeInsets.all(12), child: child),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: child,
+      ),
     );
   }
 
@@ -25,32 +30,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
-  Widget optionTile(IconData icon, String title, VoidCallback onTap) {
+  Widget optionTile(
+    IconData icon,
+    String title,
+    VoidCallback onTap,
+  ) {
     return ListTile(
-      leading: Icon(icon, color: Color(0xFF3D7DC8)),
+      leading: Icon(
+        icon,
+        color: const Color(0xFF3D7DC8),
+      ),
       title: Text(title),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+      ),
       onTap: onTap,
     );
   }
 
+  // ---------- BUILD PRINCIPAL ----------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Perfil")),
+      appBar: AppBar(
+        title: const Text("Perfil"),
+      ),
+
       body: ListView(
         children: [
           // USUARIO
           sectionCard(
             child: Row(
               children: const [
-                CircleAvatar(radius: 30, child: Icon(Icons.person, size: 30)),
+                CircleAvatar(
+                  radius: 30,
+                  child: Icon(
+                    Icons.person,
+                    size: 30,
+                  ),
+                ),
+
                 SizedBox(width: 12),
+
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -61,6 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     Text("kaleb@email.com"),
                   ],
                 ),
@@ -74,8 +106,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Resumen general"),
+
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceAround,
                   children: const [
                     Column(
                       children: [
@@ -89,6 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text("Pacientes"),
                       ],
                     ),
+
                     Column(
                       children: [
                         Text(
@@ -101,6 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text("Medicamentos"),
                       ],
                     ),
+
                     Column(
                       children: [
                         Text(
@@ -125,11 +161,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Pacientes"),
+
                 ListTile(
                   title: const Text("Max"),
                   trailing: const Icon(Icons.more_vert),
                   onTap: () {},
                 ),
+
                 ListTile(
                   title: const Text("Luna"),
                   trailing: const Icon(Icons.more_vert),
@@ -145,18 +183,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Estado del sistema"),
+
                 SwitchListTile(
                   secondary: const Icon(
                     Icons.bluetooth,
                     color: Color(0xFF3D7DC8),
                   ),
+
                   title: const Text("Bluetooth"),
+
                   subtitle: Text(
-                    bluetoothActivo ? "Conectado" : "Desconectado",
+                    bluetoothActivo
+                        ? "Conectado"
+                        : "Desconectado",
                   ),
+
                   value: bluetoothActivo,
-                  activeColor: const Color(0xFF3D7DC8),
-                  onChanged: (value) => setState(() => bluetoothActivo = value),
+
+                  activeColor:
+                      const Color(0xFF3D7DC8),
+
+                  onChanged: (value) {
+                    setState(() {
+                      bluetoothActivo = value;
+                    });
+                  },
                 ),
               ],
             ),
@@ -168,11 +219,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Notificaciones"),
+
                 SwitchListTile(
-                  title: const Text("Recordatorios"),
+                  title:
+                      const Text("Recordatorios"),
+
                   value: recordatorios,
-                  activeColor: const Color(0xFF3D7DC8),
-                  onChanged: (value) => setState(() => recordatorios = value),
+
+                  activeColor:
+                      const Color(0xFF3D7DC8),
+
+                  onChanged: (value) {
+                    setState(() {
+                      recordatorios = value;
+                    });
+                  },
                 ),
               ],
             ),
@@ -184,8 +245,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Configuración"),
-                optionTile(Icons.settings, "Configuración general", () {}),
-                optionTile(Icons.security, "Privacidad", () {}),
+
+                optionTile(
+                  Icons.settings,
+                  "Configuración general",
+                  () {},
+                ),
+
+                optionTile(
+                  Icons.security,
+                  "Privacidad",
+                  () {},
+                ),
               ],
             ),
           ),
@@ -196,7 +267,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 sectionTitle("Exportar datos"),
-                optionTile(Icons.upload_file, "Exportar respaldo", () {}),
+
+                optionTile(
+                  Icons.upload_file,
+                  "Exportar respaldo",
+                  () {},
+                ),
               ],
             ),
           ),
