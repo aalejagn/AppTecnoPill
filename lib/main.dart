@@ -17,6 +17,7 @@ late AppDatabase database;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   database = AppDatabase();
+  await database.customSelect('SELECT 1').get();
   runApp(MyApp());
 }
 

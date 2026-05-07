@@ -2,6 +2,9 @@ import 'package:http/http.dart' as http;
 import 'bluetooth_servicio.dart';
 import '../database/app_database.dart';
 
+// Segun para BD
+import '../main.dart';
+
 class WifiServicio {
   String get ipTecnoPill {
     String? ipDetectada = MiBluetoothService().ipActualESP32;
@@ -110,7 +113,7 @@ class WifiServicio {
 
         print("Evento ESP32 → Casillero $casillero | Estado: $estado");
 
-        await db.actualizarTomaDesdeESP32(casillero, tomada);
+        await database.actualizarTomaDesdeESP32(casillero, tomada);
       }
     } catch (e) {
       print("Error: $e");

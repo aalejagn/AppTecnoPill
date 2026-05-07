@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
+// Segun para BD
+import '../main.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -9,17 +11,17 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final db = AppDatabase();
+  // final database = AppDatabase();
 
   String? _pacienteSeleccionado;
 
   Future<List<Patient>> _getPacientes() {
-    return db.getAllPatients();
+    return database.getAllPatients();
   }
 
   Stream<List<Schedule>> _getHistorial(String paciente) {
-    return (db.select(
-      db.schedules,
+    return (database.select(
+      database.schedules,
     )..where((s) => s.pacienteNombre.equals(paciente))).watch();
   }
 

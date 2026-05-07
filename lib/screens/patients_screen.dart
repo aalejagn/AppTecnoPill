@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import 'add_patient_screen.dart';
 
+// Segun para BD
+import '../main.dart';
+
 class PacientesScreen extends StatefulWidget {
   const PacientesScreen({super.key});
 
@@ -11,7 +14,7 @@ class PacientesScreen extends StatefulWidget {
 
 class _PacientesScreenState extends State<PacientesScreen> {
   Future<List<Patient>> _getPacientes() {
-    return db.getAllPatients();
+    return database.getAllPatients();
   }
 
   int calcularEdad(DateTime fecha) {
@@ -29,7 +32,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
   }
 
   Future<void> _eliminar(int id) async {
-    await db.deletePatient(id);
+    await database.deletePatient(id);
     setState(() {});
   }
 

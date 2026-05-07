@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 
 part 'app_database.g.dart';
 
-final db = AppDatabase();
+// final db = AppDatabase();
 
 // 🟢 TABLA PACIENTES
 class Patients extends Table {

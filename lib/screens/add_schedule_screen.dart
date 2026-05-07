@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' hide Column;
 import '../database/app_database.dart';
 import '../services/wifi_servicio.dart';
+// Segun para BD
+import '../main.dart';
 
 class AddScheduleScreen extends StatefulWidget {
   final Schedule? schedule;
@@ -51,8 +53,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   }
 
   Future<void> _obtenerCasillerosEnUso() async {
-    final registros = await db.getAllSchedules();
-    final pacientes = await db.getAllPatients();
+    final registros = await database.getAllSchedules();
+    final pacientes = await database.getAllPatients();
 
     setState(() {
       _casillerosOcupados = registros
@@ -74,7 +76,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
       return;
     }
 
-    final existe = await db.getScheduleByCasillero(_casilleroSeleccionado!);
+    final existe = await database.getScheduleByCasillero(_casilleroSeleccionado!);
     if (existe != null && widget.schedule == null) {
       _mostrarAlerta("Casillero ocupado", "Ya tiene un medicamento");
       return;
@@ -86,7 +88,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
     //Obtenemos todos los horarios actuales (excepto el que estamos editando)
 
-    final todosLosHorarios = await db.getAllSchedules();
+    final todosLosHorarios = await database.getAllSchedules();
     for (var s in todosLosHorarios) {
       //Si estamos editando, no comparamos con sigomismo
       if (widget.schedule != null && s.id == widget.schedule!.id) continue;
@@ -126,13 +128,13 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
       int idFinal;
 
       if (widget.schedule == null) {
-        idFinal = await db.insertSchedule(data);
+        idFinal = await database.insertSchedule(data);
       } else {
-        await db.updateSchedule(widget.schedule!.id, data);
+        await database.updateSchedule(widget.schedule!.id, data);
         idFinal = widget.schedule!.id;
       }
 
-      final scheduleParaEnviar = await db.getScheduleById(idFinal);
+      final scheduleParaEnviar = await database.getScheduleById(idFinal);
 
       if (scheduleParaEnviar != null) {
         _mostrarLoading();

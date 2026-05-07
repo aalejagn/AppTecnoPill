@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
 import '../database/app_database.dart';
-
 import 'add_schedule_screen.dart';
-
 import '../services/wifi_servicio.dart';
-
 import 'dart:async';
+
+// Segun para BD
+import '../main.dart';
 
 class SchedulesScreen extends StatefulWidget {
   const SchedulesScreen({super.key});
@@ -19,11 +18,11 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   Timer? _timer;
 
   Stream<List<Schedule>> _getSchedules() {
-    return db.select(db.schedules).watch();
+    return database.select(database.schedules).watch();
   }
 
   Future<void> _eliminar(int id) async {
-    await db.deleteSchedule(id);
+    await database.deleteSchedule(id);
   }
 
   Widget _infoColumn(String title, String value) {
@@ -132,7 +131,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 onTap: () async {
                   Navigator.pop(context);
 
-                  await db.deleteSchedule(s.id);
+                  await database.deleteSchedule(s.id);
 
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -394,7 +393,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     if (s.omitidas > 0)
                       ElevatedButton.icon(
                         onPressed: () async {
-                          await db.confirmarTomaManual(s.casillero);
+                          await database.confirmarTomaManual(s.casillero);
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

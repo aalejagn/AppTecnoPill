@@ -7,11 +7,14 @@ import '../services/bluetooth_servicio.dart';
 import '../screens/wifi_screen.dart';
 import '../screens/bluetooth_screen.dart';
 
+// Segun para BD
+import '../main.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   Stream<List<Schedule>> _escucharHorarios() {
-    return db.select(db.schedules).watch();
+    return database.select(database.schedules).watch();
   }
 
   String _calcularProximaHora(Schedule s) {
@@ -169,12 +172,12 @@ class HomeScreen extends StatelessWidget {
 
                     // 📊 TUS ESTADÍSTICAS
                     StreamBuilder<List<Schedule>>(
-                      stream: db.select(db.schedules).watch(),
+                      stream: database.select(database.schedules).watch(),
                       builder: (context, scheduleSnap) {
                         final schedules = scheduleSnap.data ?? [];
 
                         return StreamBuilder<List<Patient>>(
-                          stream: db.select(db.patients).watch(),
+                          stream: database.select(database.patients).watch(),
                           builder: (context, patientSnap) {
                             final patients = patientSnap.data ?? [];
 

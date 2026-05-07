@@ -7,11 +7,14 @@ import '../services/bluetooth_servicio.dart';
 import '../screens/wifi_screen.dart';
 import '../screens/bluetooth_screen.dart';
 
+import '../main.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+
   Stream<List<Schedule>> _escucharHorarios() {
-    return db.select(db.schedules).watch();
+    return database.select(database.schedules).watch();
   }
 
   String _calcularProximaHora(Schedule s) {
@@ -165,12 +168,12 @@ class HomeScreen extends StatelessWidget {
 
                     // 📊 TUS ESTADÍSTICAS
                     StreamBuilder<List<Schedule>>(
-                      stream: db.select(db.schedules).watch(),
+                      stream: database.select(database.schedules).watch(),
                       builder: (context, scheduleSnap) {
                         final schedules = scheduleSnap.data ?? [];
 
                         return StreamBuilder<List<Patient>>(
-                          stream: db.select(db.patients).watch(),
+                          stream: database.select(database.patients).watch(),
                           builder: (context, patientSnap) {
                             final patients = patientSnap.data ?? [];
 
@@ -268,6 +271,23 @@ class HomeScreen extends StatelessWidget {
           StreamBuilder<List<Schedule>>(
             stream: _escucharHorarios(),
             builder: (context, snapshot) {
+
+              print("CONNECTION STATE: ${snapshot.connectionState}");
+              print("HAS DATA: ${snapshot.hasData}");
+              print("ERROR: ${snapshot.error}");
+
+              if (snapshot.hasError) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      "ERROR: ${snapshot.error}",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                );
+              }
+
               if (!snapshot.hasData) {
                 return const SliverToBoxAdapter(
                   child: Padding(
@@ -589,6 +609,26 @@ class HomeScreen extends StatelessWidget {
           StreamBuilder<List<Schedule>>(
             stream: _escucharHorarios(),
             builder: (context, snapshot) {
+
+              print("========== STREAM ==========");
+              print("STATE: ${snapshot.connectionState}");
+              print("HAS DATA: ${snapshot.hasData}");
+              print("ERROR: ${snapshot.error}");
+              print("============================");
+
+              // ❌ ERROR
+              if (snapshot.hasError) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      "ERROR: ${snapshot.error}",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                );
+              }
+
               // 🔄 LOADING
               if (!snapshot.hasData) {
                 return const SliverToBoxAdapter(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' hide Column;
 import '../database/app_database.dart';
+// Segun para BD
+import '../main.dart';
 
 class AddPatientScreen extends StatefulWidget {
   final Patient? patient;
@@ -57,9 +59,9 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
 
       // 🔥 CREATE O UPDATE
       if (widget.patient == null) {
-        await db.insertPatient(data);
+        await database.insertPatient(data);
       } else {
-        await db.updatePatient(widget.patient!.id, data);
+        await database.updatePatient(widget.patient!.id, data);
       }
 
       if (!mounted) return;
