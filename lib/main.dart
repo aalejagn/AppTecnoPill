@@ -7,6 +7,7 @@ import 'screens/settings_screen.dart';
 import 'screens/add_patient_screen.dart';
 import 'screens/add_schedule_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/wifi_screen.dart';
 import 'screens/bluetooth_screen.dart';
 import 'services/bluetooth_servicio.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3D7DC8)),
         useMaterial3: true,
       ),
-      home: SplashScreen(),
+      home: LoginScreen(),
     );
   }
 }

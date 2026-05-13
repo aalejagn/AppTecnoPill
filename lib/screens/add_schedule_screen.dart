@@ -332,7 +332,34 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             SizedBox(height: 20),
 
             Text("Casilleros", style: TextStyle(fontWeight: FontWeight.bold)),
-            Row(children: [1, 2].map(_casillero).toList()),
+            Row(children: [1, 2, 3].map(_casillero).toList()),
+
+            if (_casilleroSeleccionado == 3)
+              Container(
+                margin: const EdgeInsets.only(top: 8, bottom: 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F0FB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF3D7DC8).withOpacity(0.4)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFF3D7DC8), size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        "Nota: El casillero número 3 se recomienda para medicamentos de envase de cristal, de plástico o primeros auxilios.",
+                        style: TextStyle(
+                          color: Color(0xFF2A5A9F),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             SizedBox(height: 20),
 

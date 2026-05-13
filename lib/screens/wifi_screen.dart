@@ -23,7 +23,7 @@ class _WifiScreenState extends State<WifiScreen> {
   @override
   void initState() {
     super.initState();
-    _configurarEscucha();
+    // _configurarEscucha();
     // Recuperamos el nombre si ya se había conectado antes
     _redConectadaActual = _bleService.nombreRedActual;
     _configurarEscucha();
@@ -46,9 +46,11 @@ class _WifiScreenState extends State<WifiScreen> {
     Stream.periodic(const Duration(milliseconds: 800)).listen((_) {
       if (!mounted) return; // Si ya no estás en la pantalla, se detiene
 
-      if (_redesDetectadas.length != _bleService.redesWifi.length) {
+      // Comparamos contenido, no solo largo
+      final redesUnicas = _bleService.redesWifi.toSet().toList(); // ← elimina duplicados
+      if (_redesDetectadas.length != redesUnicas.length) {
         setState(() {
-          _redesDetectadas = List.from(_bleService.redesWifi);
+          _redesDetectadas = redesUnicas;
         });
       }
     });
